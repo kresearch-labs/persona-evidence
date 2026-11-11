@@ -1,0 +1,61 @@
+[pruned tool output]
+1|#!/usr/bin/env python3
+2|"""sources_ledger.py — citation ledger for research deliverables (stdlib only).
+3|
+4|Fair-fight parity with the Runner run's sources.py workflow:
+5|  add      — register a source (id, url, publication, date, type, notes)
+6|  list     — print the ledger
+7|  verify   — check a report: every [S#] citation id exists in the ledger,
+8|             count cited sentences, report coverage (local checks only;
+9|             the research sandbox has no direct shell network)
+10|  render   — emit the annotated source list (markdown) from the ledger
+11|
+12|Usage:
+13|  python3 sources_ledger.py add S1 --url URL --pub NAME --date 1922-04-07 \
+14|      --type CONTEMPORARY-NEWSPAPER --notes "..."
+15|  python3 sources_ledger.py list
+16|  python3 sources_ledger.py verify report.md --min-coverage 0.5
+17|  python3 sources_ledger.py render > source_list.md
+18|"""
+19|import argparse, json, re, sys
+20|from pathlib import Path
+21|
+22|LEDGER = Path("sources_ledger.json")
+23|
+24|
+25|def load():
+26|    if LEDGER.exists():
+27|        return json.loads(LEDGER.read_text())
+28|    return []
+29|
+30|
+31|def save(entries):
+32|    LEDGER.write_text(json.dumps(entries, indent=1, ensure_ascii=False))
+33|
+34|
+35|def cmd_add(a):
+36|    entries = load()
+37|    ids = {e["id"] for e in entries}
+38|    if a.id in ids and not a.replace:
+39|        sys.exit(f"error: {a.id} already exists (use --replace)")
+40|    entries = [e for e in entries if e["id"] != a.id]
+41|    entries.append({"id": a.id, "url": a.url or "", "publication": a.pub or "",
+42|                    "date": a.date or "", "type": a.type or "",
+43|                    "notes": a.notes or ""})
+44|    save(entries)
+45|    print(f"ledger: {len(entries)} sources (added {a.id})")
+46|
+47|
+48|def cmd_list(_a):
+49|    for e in load():
+50|        print(f"[{e['id']}] {e.get('publication','')} {e.get('date','')} "
+51|              f"({e.get('type','')})\n    {e.get('url','')}\n    {e.get('notes','')}")
+52|
+53|
+54|def cmd_verify(a):
+55|    entries = load()
+56|    ids = {e["id"] for e in entries}
+57|    text = Path(a.report).read_text(errors="ignore")
+58|    # sentences = rough split; a "cited sentence" contains [S#]
+59|    sentences = [s for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+60|    cited = [s for s in sentences if re.search(r"\[S\d+\]", s)]

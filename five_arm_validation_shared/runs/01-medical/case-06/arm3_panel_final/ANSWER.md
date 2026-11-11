@@ -1,0 +1,1 @@
+Addison's disease (primary adrenal insufficiency) — the year of hyperpigmentation of palms, soles and mucous membranes, salt craving, postural hypotension, and recurrent vomiting/abdominal pain with hyponatremia and hyperkalemia (initially misread as pancreatitis with AKI) is the classic picture of chronic primary adrenocortical failure presenting with an Addisonian crisis.

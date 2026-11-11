@@ -1,0 +1,3 @@
+Occult ectopic ACTH syndrome — ACTH-dependent Cushing syndrome caused by an occult ectopic ACTH-secreting neuroendocrine tumor (most likely a bronchopulmonary carcinoid).
+
+Justification: Elevated early-morning ACTH (106 pg/mL) with loss of diurnal rhythm (11 p.m. cortisol 23 µg/dL), failure of cortisol to suppress after high-dose (8 mg) dexamethasone, and normal pituitary MRI plus normal chest/abdomen CT point away from Cushing disease and toward an ACTH-dependent source not yet visible on conventional imaging — an occult ectopic ACTH-secreting tumor, classically a bronchial carcinoid (plausible in this 30 pack-year smoker).

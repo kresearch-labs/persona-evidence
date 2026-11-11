@@ -1,0 +1,30 @@
+# Case 19 — Answer
+
+**Bottom line.** The FAR 52.212-4 termination-for-convenience clause is valid and, through the ordering clause, applies to each task order; it lets the Government end "any part" of the work for its sole convenience. But it neither converts the per-class task orders into lump-sum commitments to buy fourteen classes a year nor expands the Contractor's recovery. The Contractor was owed — and was paid — the agreed price per class actually taught; it is not entitled to the orders' full stated price, and even on the Government's own constructive-termination theory its recovery would be capped at the clause's settlement measure (value of work performed plus demonstrable termination charges), which it never pleaded. Summary judgment for the Government should be affirmed.
+
+## Issues the clause presents
+
+1. **Incorporation and flow-down.** FAR 52.212-4 was incorporated by reference, and the defense ordering clause made every task order "subject to the terms and conditions of the underlying contract." The termination clause is therefore part of each task order; the Government need not have restated it in the orders. (Indeed, termination clauses are so fundamental to government contracts that they are read into them by operation of law even when omitted.)
+
+2. **Scope of "or any part hereof."** The clause authorizes termination of the whole contract *or any part of it*, which squarely covers a partial termination of a task order — here, the unperformed balance of each year's order (the classes never used). The related question is whether a "constructive" termination — no written notice, just a course of conduct — can invoke the clause; the doctrine answers yes where the Government's conduct is the practical equivalent of a termination notice.
+
+3. **What the "total price" means.** Each order listed a per-class price and a total "corresponding to the price of fourteen classes." The central interpretive issue is whether that total is a firm promise to buy fourteen classes or merely the arithmetic ceiling of a per-unit order (unit price × maximum quantity). Read in context — an IDIQ contract that *capped* the Contractor at fourteen classes a year, required all services to be ordered by task orders, and priced services per class — the total is a maximum obligation, not a guaranteed minimum revenue. Nothing in the contract states a minimum quantity the Government had to order each year, so the unused classes were a hope, not an accrued right.
+
+4. **Limits on exercise of the clause.** "Sole convenience" is not a license to escape a bargain: the Government's decision must be genuine and is reviewable for bad faith or abuse of discretion. Here the claimed convenience — needing fewer contract classes because Government personnel could teach the remainder — is a paradigmatic convenience judgment (an insourcing/staffing decision), well within the discretion the clause protects.
+
+5. **Remedial measure.** The clause fixes the remedy: on termination the Contractor receives the percentage of the price reflecting work performed, plus reasonable charges it can demonstrate resulted from the termination — not anticipatory profit on the unperformed balance. A termination-for-convenience clause limits recovery; it is not a damages multiplier.
+
+6. **Procedure.** The Government raised the clause defensively and "constructively," after the Contractor pleaded only breach and lost profits. A termination clause is not a waivable affirmative defense so much as a term defining the extent of the Government's obligation; but if it is treated as dispositive, the Contractor should have notice and a chance to amend — which would not help it, for the reasons below.
+
+## How the clause should be construed
+
+The orders must be read with the contract, not in isolation. A per-class price in an IDIQ whose ordering clause channels all performance through task orders means payment follows orders placed and services rendered. The "total price" line is the ceiling if all fourteen classes were ordered. Three years of the Government ordering fewer classes and the Contractor billing and accepting payment per class is a course of performance confirming that construction. On that reading, each year the Government performed every order completely: it bought and paid for every class it used.
+
+## How it should be enforced
+
+- **The Contractor's breach theory fails.** With no minimum quantity promised, the Government's use of fewer than fourteen classes breached nothing; the full stated price is not "stated" as a lump-sum debt but as the maximum value of variable orders.
+- **The constructive-termination holding is unnecessary but harmless.** If the shortfall is treated as a constructive partial termination of each order's unused balance, the clause's measure controls: the Contractor keeps full payment for work performed (the classes taught — already received) and may claim only demonstrable termination charges. Having incurred no reliance costs on classes never ordered, it would recover little or nothing beyond what it was paid; anticipatory profit on the unused balance is not recoverable under the clause.
+- **The clause cannot be used to launder a breach.** If the Government had repudiated a firm commitment, the clause would not shield it. But on these facts the Government's conduct matched the contract's risk allocation, so the clause operates as written: it caps, and here does not even need to cut, the Contractor's recovery.
+- **Procedurally**, the judgment should rest on the payment terms; alternatively, the Contractor should be allowed to amend to plead termination-settlement costs, which would still yield no additional recovery on these facts.
+
+**One-line justification:** A termination-for-convenience clause incorporated into per-class IDIQ task orders permits the Government to end any unperformed part for its sole convenience, but it neither guarantees the maximum order quantity nor yields more than payment for work performed plus demonstrable termination costs — exactly what the Contractor already received.

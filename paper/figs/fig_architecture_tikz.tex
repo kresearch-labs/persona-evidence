@@ -1,0 +1,95 @@
+% Figure 3, drawn by Overleaf from this TikZ source (from figs/fig_architecture_v4.tex, plain labels)
+\begin{tikzpicture}[x=1cm,y=1cm,
+  stage/.style={draw=OkBlue!80!black, fill=blue!12, rounded corners=2pt,
+                align=center, inner sep=3pt, thick, font=\sffamily\scriptsize},
+  mem/.style={draw=OkOrange!85!black, fill=orange!15, rounded corners=2pt,
+              align=center, inner sep=3pt, thick, font=\sffamily\scriptsize},
+  fixb/.style={draw=OkGreen!85!black, fill=green!15, rounded corners=2pt,
+               align=center, inner sep=3pt, thick, font=\sffamily\scriptsize},
+  pnl/.style={draw=OkMagenta!85!black, fill=OkMagenta!12, rounded corners=2pt,
+              align=center, inner sep=3pt, thick, font=\sffamily\scriptsize},
+  flow/.style={-{Stealth[length=2.4mm]}, semithick, draw=black!75},
+  bflow/.style={flow, draw=OkBlue},
+  gflow/.style={flow, draw=OkGreen!85!black},
+  oflow/.style={flow, draw=OkOrange!85!black},
+  mflow/.style={flow, draw=OkMagenta!85!black},
+  lbl/.style={font=\sffamily\tiny, align=center, fill=white, inner sep=1.2pt},
+]
+
+% ================= control banner =================
+\node[mem, minimum width=158mm, font=\sffamily\tiny\bfseries] (orch) at (8.2,10.3)
+  {ORCHESTRATOR: personas on demand --- summons 2--5 per task (agent does taxonomy, user stays in plain words)};
+
+% ================= ROW 1: request path (L1-L5) =================
+\node[stage, minimum width=13mm] (query) at (0.859,8.0) {\textbf{agent}\\ \textbf{query}};
+\node[stage, minimum width=30mm, dashed] (emb) at (3.689,7.9)
+  {\textbf{FROZEN EMBEDDER (shared)}\\ one off-the-shelf model\\ no per-persona weights\\ never trained on user data};
+\node[stage, minimum width=19mm] (gate) at (6.918,8.0)
+  {\textbf{REL. GATE}\\ \textbf{top-k}\\ (relevance-gated)};
+\node[stage, minimum width=25mm] (judge) at (9.491,8.0)
+  {\textbf{JUDGE heads (cal.)}\\ the personas:\\ on-task? sideways?\\ necessary?};
+\node[stage, minimum width=24mm] (comp) at (12.701,8.0)
+  {\textbf{COMPILE}\\ L1 $>$ L2 $>$ L3\\ verbatim-first + WARNINGS};
+\node[stage, minimum width=17mm] (model) at (15.513,8.0)
+  {\textbf{model}\\ (commodity)\\ the mouth};
+
+% ================= ROW 2: response path (L6-L7) =================
+\node[stage, minimum width=28mm] (audit) at (14.55,4.9)
+  {\textbf{OUTPUT AUDIT}\\ supported / unverified /\\ contradicted\\ EDGE-OF-TERRITORY:\\ ``we don't know''\\ + escalate (conformal floor)};
+\node[stage, minimum width=13mm] (user) at (9.55,5.4) {\textbf{user}};
+
+% ================= memory band (L7-L8) =================
+\node[mem, minimum width=32mm] (rec) at (4.3,2.9)
+  {\textbf{RECEIPT + AUDIT CHAIN}\\ 5-status verdict (completed/\\ no-work/blocked/failed/uncertain)\\ hash-chained secrets$\to$NAMES\\ audit: action$\to$reason$\to$artifact};
+\node[fixb, minimum width=24mm] (fixg) at (0.85,0.35)
+  {\textbf{SELF-REPAIR GATE}\\ apply $\to$ re-test slice\\ auto-rollback on red\\ no self-patching\\ of its own checks};
+\node[mem, minimum width=26mm] (guided) at (9.6,2.2)
+  {\textbf{GUIDED ERRORS (on failure)}\\ symptom $\to$ cause $\to$ exact fix\\ errors teach; no dead end};
+
+% ================= bottom: store + tribunal =================
+\node[mem, minimum width=48mm] (store) at (5.9,-1.7)
+  {\textbf{PBLOCK STORE (bi-temporal, MB-scale)}\\ snapshot before every wave's writes\\
+   SCARS supersede (2-instance bar, 10\%-flake-safe)\\ DEDUPE $\geq$0.85 · DONE-SIGNALS (81\% name test)\\
+   each run's briefing linked to its outcome};
+\node[pnl, minimum width=46mm] (panel) at (12.35,-1.7)
+  {\textbf{PANEL GRADES ITSELF, THEN STANDS TRIAL}\\ per-head ECE re-test ($\Delta\leq$0.01) + accuracy floor\\
+   warnings always shown · no supersede on noise\\ human-only corpus rules · successes kept};
+
+% ================= arrows: request path (L1-L5) =================
+\draw[flow] (query) -- (emb);
+\draw[flow] (emb) -- (gate);
+\draw[flow] (gate) -- (judge);
+\draw[flow] (judge) -- (comp);
+\draw[flow] (comp) -- (model);
+% control arrows (orchestrator staffs the panel)
+\draw[oflow] (orch.south -| gate.north) -- (gate.north);
+\draw[oflow] (orch.south -| judge.north) -- (judge.north);
+
+% ================= response path (L6) + self-repair edge =================
+\draw[flow] (model) -- (audit);
+\draw[gflow] (audit.north) -- node[lbl, left=1.5pt, font=\sffamily\scriptsize] {on ``fix'': repair\\ re-prompt (max 2)} (model.south);
+\draw[flow] (audit.west) -- node[lbl, above=0.5pt] {verdicts shown} (user.east);
+
+% ================= memory loop (L2): left channel down, right channel up ====
+\draw[bflow] (emb.south) -- (2.35,6.85) -- (2.3,0.0)
+  node[lbl, pos=0.35, right=1.5pt] {embed query /\\ embed new lessons} -- (store.west);
+\draw[bflow] (store.north) -- (7.15,0.5) -- (6.95,7.05)
+  node[lbl, pos=0.68, right=1.5pt] {top-k candidates\\ (relevance-gated)} -- (gate.south);
+
+% ================= confirm path (L7-L8) =================
+\draw[flow] (user.south) |- node[lbl, pos=0.4, above=1pt] {confirm / correct} (rec.east);
+\draw[gflow] (rec.west) |- node[lbl, pos=0.4, above=1pt] {two-stage writeback} (fixg.north);
+\draw[gflow] (fixg.south) |- node[lbl, pos=0.42, below=1pt] {verified append --- rollback on red} (store.south west);
+\draw[oflow] (rec.east) -- node[lbl, above=1pt] {on failure} (guided.west);
+
+% ================= tribunal =================
+\draw[mflow] (store.east) -- (panel.west);
+
+% ============ error-learning loop (errors teach; no dead end) ============
+\draw[oflow] (guided.south) -- node[lbl, right=1.5pt] {failure lesson\\ stored after verification} (store.north east);
+
+% ================= precedence note =================
+\node[font=\sffamily\tiny\itshape, align=center, text=black!65, draw=black!35, dashed, rounded corners=2pt, inner sep=3pt] at (13.2,1.8)
+  {precedence:\\ security $>$ correctness $>$ style\\ L1 verbatim --- cannot be\\ overridden by learned content};
+
+\end{tikzpicture}

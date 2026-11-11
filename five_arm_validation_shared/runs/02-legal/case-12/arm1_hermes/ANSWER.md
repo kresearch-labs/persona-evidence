@@ -1,0 +1,15 @@
+# Arm 1 — Reference answer — 02-legal case-12
+
+**The issues:** (1) whether the merger/integration clause (Section 4.07, "Entire Agreement") bars extrinsic proof of fraudulent inducement — misrepresentations about the probability and value of contract rights presented to the buyer before closing; and (2) whether the parol-evidence rule, which is a rule of *substantive contract law* excluding prior agreements to vary integrated terms, applies at all to a tort claim for fraud in the inducement.
+
+**How it should be construed and enforced:**
+
+1. **A merger clause does not immunize fraudulent inducement.** The parol-evidence rule and integration clauses govern what *contract terms* the parties adopted; they were never designed to be a fraud shield. A party who is induced to sign an agreement by knowingly false representations of fact may sue in deceit for the fraud itself — a separate, tortious wrong — and may prove the misrepresentation, its falsity, scienter, justifiable reliance, and damage with extrinsic evidence. Allowing the drafter to extinguish fraud claims by reciting "there are no … representations … other than those expressly set forth" would let integration language launder misrepresentation, which courts have refused: the overwhelming rule is that merger clauses do not bar claims for fraud in the inducement, though they may (if clear and specific) disclaim *particular* representations or waive reliance.
+
+2. **The sellers' narrow reading — that extrinsic proof reaches only fraud in procuring the signature — is wrong.** Fraud in the inducement covers misrepresentations that bring about the transaction as a whole; a buyer who would not have purchased, or would have paid less, but for lies about income-producing contract rights has been defrauded in the inducement whether or not the signature mechanics were themselves procured by deceit.
+
+3. **The clause's "no other representations" language is not a fraud disclaimer.** To defeat reliance, a party must disclaim in words — an express statement that the buyer is not relying on specific oral representations (a "non-reliance" clause) or an express disclaimer of the particular warranties. Section 4.07 is boilerplate integration language; it says nothing about reliance or about the truth of the pre-contract presentations, and general no-other-promises language is construed strictly against the drafter. (Had the contract contained an express non-reliance clause, the analysis would tighten; it did not.)
+
+4. **Remedies:** rescission requires restoring the parties; damages (out-of-pocket or benefit-of-the-bargain) are the ordinary deceit measure. Partial summary judgment for the sellers on the fraud claim should be reversed, and the buyer's inducement claim proceeds with extrinsic proof — including the pre-closing presentation.
+
+**Key issues flagged:** parol-evidence rule is substantive, not evidentiary, and doesn't reach tort fraud · merger clause ≠ non-reliance clause · fraud in the inducement covers the whole bargain, not just the signature · justifiable reliance preserved absent an express disclaimer.

@@ -1,0 +1,9 @@
+# Arm 1 — Reference answer — 01-medical case-10
+
+**Most likely diagnosis: spinal (L4–L5 facet-joint) tuberculosis — tuberculous spondylitis/facet-joint arthritis with early epidural and paraspinal extension (a Pott's-disease variant), indolent and paucibacillary.**
+
+**One-line justification:** MRI shows periarticular enhancement of the right L4–L5 facet with extension into the epidural space and posterior paraspinal muscles plus a rim-enhancing fluid collection — the look of a chronic granulomatous infection rather than pyogenic fasciitis; the core biopsy showed chronic inflammation WITHOUT caseation (paucibacillary TB often lacks caseation on small cores and almost never shows organisms on stain), immunostains excluded neoplasm (AE1/AE3, S100, desmin negative), the intermediate-yet-questionable PPD is expected in a BCG-vaccinated patient (vaccination blurs the test), the lung CT is negative in isolated extrapulmonary TB, and the 2-month improvement on follow-up fits the slow smolder of spinal TB — the indolent timeline (overnight severe pain yet osteophytes-only x-ray, no systemic toxicity, afebrile) is itself uncharacteristic of pyogenic infection.
+
+**Brief differential:** pyogenic facet-joint septic arthritis with epidural phlegmon (more acute, more systemic toxicity), brucellar spondylitis (region-appropriate for a Middle Eastern resident — worth serum titers), and degenerative facet arthropathy with synovial cyst (enhancement and paraspinal extension argue infection).
+
+**Key point:** biopsy with chronic inflammation, no malignancy, no caseation, BCG-vaccinated patient, and weeks-to-months improvement is the classic face of paucibacillary spinal TB — confirm with TB-PCR/culture of the biopsy material and antitubercular therapy rather than treating it as a pyogenic fasciitis.

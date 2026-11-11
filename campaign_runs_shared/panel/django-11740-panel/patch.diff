@@ -1,0 +1,29 @@
+diff --git a/django/db/migrations/autodetector.py b/django/db/migrations/autodetector.py
+index 0dc1c77c53..bd7b6fd63b 100644
+--- a/django/db/migrations/autodetector.py
++++ b/django/db/migrations/autodetector.py
+@@ -963,6 +963,14 @@ class MigrationAutodetector:
+                             preserve_default = False
+                     else:
+                         field = new_field
++                    # Dependencies have to be preserved for AlterField
++                    # operations that change a field to a foreign key,
++                    # otherwise the related model may not be migrated yet.
++                    dependencies = []
++                    if field.remote_field and field.remote_field.model:
++                        dependencies.extend(
++                            self._get_dependencies_for_foreign_key(field)
++                        )
+                     self.add_operation(
+                         app_label,
+                         operations.AlterField(
+@@ -970,7 +978,8 @@ class MigrationAutodetector:
+                             name=field_name,
+                             field=field,
+                             preserve_default=preserve_default,
+-                        )
++                        ),
++                        dependencies=dependencies,
+                     )
+                 else:
+                     # We cannot alter between m2m and concrete fields

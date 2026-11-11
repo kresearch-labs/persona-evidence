@@ -1,0 +1,270 @@
+diff --git a/sklearn/feature_extraction/text.py b/sklearn/feature_extraction/text.py
+index 9b1ebd6320..789e101cc7 100644
+--- a/sklearn/feature_extraction/text.py
++++ b/sklearn/feature_extraction/text.py
+@@ -993,6 +993,9 @@ class CountVectorizer(BaseEstimator, VectorizerMixin):
+ 
+     def get_feature_names(self):
+         """Array mapping from feature integer indices to feature name"""
++        if not hasattr(self, 'vocabulary_'):
++            self._validate_vocabulary()
++
+         self._check_vocabulary()
+ 
+         return [t for t, i in sorted(six.iteritems(self.vocabulary_),
+diff --git a/sklearn/neighbors/binary_tree.pxi b/sklearn/neighbors/binary_tree.pxi
+index 1f6510ac3f..d45583b859 100755
+--- a/sklearn/neighbors/binary_tree.pxi
++++ b/sklearn/neighbors/binary_tree.pxi
+@@ -150,10 +150,10 @@ import numpy as np
+ import warnings
+ from ..utils import check_array
+ 
+-from typedefs cimport DTYPE_t, ITYPE_t, DITYPE_t
+-from typedefs import DTYPE, ITYPE
++from sklearn.neighbors.typedefs cimport DTYPE_t, ITYPE_t, DITYPE_t
++from sklearn.neighbors.typedefs import DTYPE, ITYPE
+ 
+-from dist_metrics cimport (DistanceMetric, euclidean_dist, euclidean_rdist,
++from sklearn.neighbors.dist_metrics cimport (DistanceMetric, euclidean_dist, euclidean_rdist,
+                            euclidean_dist_to_rdist, euclidean_rdist_to_dist)
+ 
+ # some handy constants
+@@ -992,7 +992,7 @@ def newObj(obj):
+ 
+ ######################################################################
+ # define the reverse mapping of VALID_METRICS
+-from dist_metrics import get_valid_metric_ids
++from sklearn.neighbors.dist_metrics import get_valid_metric_ids
+ VALID_METRIC_IDS = get_valid_metric_ids(VALID_METRICS)
+ 
+ 
+@@ -1079,7 +1079,7 @@ cdef class BinaryTree:
+         # the number of nodes in the tree.  This results in leaf nodes
+         # with numbers of points between leaf_size and 2 * leaf_size
+         self.n_levels = np.log2(fmax(1, (n_samples - 1) / self.leaf_size)) + 1
+-        self.n_nodes = (2 ** self.n_levels) - 1
++        self.n_nodes = <ITYPE_t>((2 ** self.n_levels) - 1)
+ 
+         # allocate arrays for storage
+         self.idx_array_arr = np.arange(n_samples, dtype=ITYPE)
+diff --git a/sklearn/neighbors/dist_metrics.pxd b/sklearn/neighbors/dist_metrics.pxd
+index fdbc7e1547..fba0fe7cf7 100644
+--- a/sklearn/neighbors/dist_metrics.pxd
++++ b/sklearn/neighbors/dist_metrics.pxd
+@@ -7,7 +7,7 @@ cimport cython
+ cimport numpy as np
+ from libc.math cimport fabs, sqrt, exp, cos, pow
+ 
+-from typedefs cimport DTYPE_t, ITYPE_t, DITYPE_t
++from sklearn.neighbors.typedefs cimport DTYPE_t, ITYPE_t, DITYPE_t
+ from typedefs import DTYPE, ITYPE
+ 
+ ######################################################################
+diff --git a/sklearn/neighbors/dist_metrics.pyx b/sklearn/neighbors/dist_metrics.pyx
+index 69c1e6ed40..84e13ba770 100755
+--- a/sklearn/neighbors/dist_metrics.pyx
++++ b/sklearn/neighbors/dist_metrics.pyx
+@@ -48,8 +48,8 @@ cdef inline np.ndarray _buffer_to_ndarray(DTYPE_t* x, np.npy_intp n):
+ from libc.math cimport fabs, sqrt, exp, pow, cos, sin, asin
+ cdef DTYPE_t INF = np.inf
+ 
+-from typedefs cimport DTYPE_t, ITYPE_t, DITYPE_t, DTYPECODE
+-from typedefs import DTYPE, ITYPE
++from sklearn.neighbors.typedefs cimport DTYPE_t, ITYPE_t, DITYPE_t, DTYPECODE
++from sklearn.neighbors.typedefs import DTYPE, ITYPE
+ 
+ 
+ ######################################################################
+diff --git a/sklearn/svm/libsvm.pyx b/sklearn/svm/libsvm.pyx
+index 978dbf7552..86da0eedb4 100644
+--- a/sklearn/svm/libsvm.pyx
++++ b/sklearn/svm/libsvm.pyx
+@@ -445,7 +445,7 @@ def decision_function(
+         n_class = 1
+     else:
+         n_class = get_nr(model)
+-        n_class = n_class * (n_class - 1) / 2
++        n_class = n_class * (n_class - 1) // 2
+ 
+     try:
+         dec_values = np.empty((X.shape[0], n_class), dtype=np.float64)
+diff --git a/sklearn/svm/libsvm_sparse.pyx b/sklearn/svm/libsvm_sparse.pyx
+index 66bddd6384..4603d58c9f 100644
+--- a/sklearn/svm/libsvm_sparse.pyx
++++ b/sklearn/svm/libsvm_sparse.pyx
+@@ -391,7 +391,7 @@ def libsvm_sparse_decision_function(
+         n_class = 1
+     else:
+         n_class = get_nr(model)
+-        n_class = n_class * (n_class - 1) / 2
++        n_class = n_class * (n_class - 1) // 2
+ 
+     dec_values = np.empty((T_indptr.shape[0] - 1, n_class), dtype=np.float64)
+     if csr_copy_predict_values(T_data.shape, T_data.data,
+diff --git a/sklearn/utils/_random.pxd b/sklearn/utils/_random.pxd
+index d230593277..1bc09323c9 100644
+--- a/sklearn/utils/_random.pxd
++++ b/sklearn/utils/_random.pxd
+@@ -7,8 +7,8 @@ import numpy as np
+ cimport numpy as np
+ 
+ 
+-cpdef sample_without_replacement(np.int_t n_population,
+-                                 np.int_t n_samples,
++cpdef sample_without_replacement(np.int64_t n_population,
++                                 np.int64_t n_samples,
+                                  method=*,
+                                  random_state=*)
+ 
+diff --git a/sklearn/utils/_random.pyx b/sklearn/utils/_random.pyx
+index 7913684d31..95c4adf5c4 100644
+--- a/sklearn/utils/_random.pyx
++++ b/sklearn/utils/_random.pyx
+@@ -24,8 +24,8 @@ np.import_array()
+ from sklearn.utils import check_random_state
+ 
+ 
+-cpdef _sample_without_replacement_check_input(np.int_t n_population,
+-                                              np.int_t n_samples):
++cpdef _sample_without_replacement_check_input(np.int64_t n_population,
++                                              np.int64_t n_samples):
+     """ Check that input are consistent for sample_without_replacement"""
+     if n_population < 0:
+         raise ValueError('n_population should be greater than 0, got %s.'
+@@ -38,8 +38,8 @@ cpdef _sample_without_replacement_check_input(np.int_t n_population,
+ 
+ 
+ cpdef _sample_without_replacement_with_tracking_selection(
+-        np.int_t n_population,
+-        np.int_t n_samples,
++        np.int64_t n_population,
++        np.int64_t n_samples,
+         random_state=None):
+     r"""Sample integers without replacement.
+ 
+@@ -81,9 +81,9 @@ cpdef _sample_without_replacement_with_tracking_selection(
+     """
+     _sample_without_replacement_check_input(n_population, n_samples)
+ 
+-    cdef np.int_t i
+-    cdef np.int_t j
+-    cdef np.ndarray[np.int_t, ndim=1] out = np.empty((n_samples, ),
++    cdef np.int64_t i
++    cdef np.int64_t j
++    cdef np.ndarray[np.int64_t, ndim=1] out = np.empty((n_samples, ),
+                                                      dtype=np.int)
+ 
+     rng = check_random_state(random_state)
+@@ -103,8 +103,8 @@ cpdef _sample_without_replacement_with_tracking_selection(
+     return out
+ 
+ 
+-cpdef _sample_without_replacement_with_pool(np.int_t n_population,
+-                                            np.int_t n_samples,
++cpdef _sample_without_replacement_with_pool(np.int64_t n_population,
++                                            np.int64_t n_samples,
+                                             random_state=None):
+     """Sample integers without replacement.
+ 
+@@ -137,12 +137,12 @@ cpdef _sample_without_replacement_with_pool(np.int_t n_population,
+     """
+     _sample_without_replacement_check_input(n_population, n_samples)
+ 
+-    cdef np.int_t i
+-    cdef np.int_t j
+-    cdef np.ndarray[np.int_t, ndim=1] out = np.empty((n_samples, ),
++    cdef np.int64_t i
++    cdef np.int64_t j
++    cdef np.ndarray[np.int64_t, ndim=1] out = np.empty((n_samples, ),
+                                                      dtype=np.int)
+ 
+-    cdef np.ndarray[np.int_t, ndim=1] pool = np.empty((n_population, ),
++    cdef np.ndarray[np.int64_t, ndim=1] pool = np.empty((n_population, ),
+                                                       dtype=np.int)
+ 
+     rng = check_random_state(random_state)
+@@ -164,8 +164,8 @@ cpdef _sample_without_replacement_with_pool(np.int_t n_population,
+ 
+ 
+ cpdef _sample_without_replacement_with_reservoir_sampling(
+-    np.int_t n_population,
+-    np.int_t n_samples,
++    np.int64_t n_population,
++    np.int64_t n_samples,
+     random_state=None):
+     """Sample integers without replacement.
+ 
+@@ -200,9 +200,9 @@ cpdef _sample_without_replacement_with_reservoir_sampling(
+     """
+     _sample_without_replacement_check_input(n_population, n_samples)
+ 
+-    cdef np.int_t i
+-    cdef np.int_t j
+-    cdef np.ndarray[np.int_t, ndim=1] out = np.empty((n_samples, ),
++    cdef np.int64_t i
++    cdef np.int64_t j
++    cdef np.ndarray[np.int64_t, ndim=1] out = np.empty((n_samples, ),
+                                                      dtype=np.int)
+ 
+     rng = check_random_state(random_state)
+@@ -223,8 +223,8 @@ cpdef _sample_without_replacement_with_reservoir_sampling(
+     return out
+ 
+ 
+-cpdef sample_without_replacement(np.int_t n_population,
+-                                 np.int_t n_samples,
++cpdef sample_without_replacement(np.int64_t n_population,
++                                 np.int64_t n_samples,
+                                  method="auto",
+                                  random_state=None):
+     """Sample integers without replacement.
+diff --git a/sklearn/utils/arrayfuncs.pyx b/sklearn/utils/arrayfuncs.pyx
+index 0ac50c76df..9ccd339e3f 100644
+--- a/sklearn/utils/arrayfuncs.pyx
++++ b/sklearn/utils/arrayfuncs.pyx
+@@ -57,8 +57,8 @@ def cholesky_delete(np.ndarray L, int go_out):
+     cdef int m = <int> L.strides[0]
+ 
+     if L.dtype.name == 'float64':
+-        cholesky_delete_dbl(m / sizeof(double), n, <double *> L.data, go_out)
++        cholesky_delete_dbl(m // sizeof(double), n, <double *> L.data, go_out)
+     elif L.dtype.name == 'float32':
+-        cholesky_delete_flt(m / sizeof(float),  n, <float *> L.data,  go_out)
++        cholesky_delete_flt(m // sizeof(float),  n, <float *> L.data,  go_out)
+     else:
+         raise TypeError("unsupported dtype %r." % L.dtype)
+diff --git a/sklearn/utils/validation.py b/sklearn/utils/validation.py
+index 70e968ee6d..d8f8592f90 100644
+--- a/sklearn/utils/validation.py
++++ b/sklearn/utils/validation.py
+@@ -487,7 +487,13 @@ def check_array(array, accept_sparse=False, dtype="numeric", order=None,
+         with warnings.catch_warnings():
+             try:
+                 warnings.simplefilter('error', ComplexWarning)
+-                array = np.array(array, dtype=dtype, order=order, copy=copy)
++                # numpy>=2: copy=False means 'never copy' (raises if a copy is
++                # needed); the old semantics wanted 'copy only if needed',
++                # which is np.array without the copy kwarg on all versions.
++                if copy:
++                    array = np.array(array, dtype=dtype, order=order, copy=True)
++                else:
++                    array = np.array(array, dtype=dtype, order=order)
+             except ComplexWarning:
+                 raise ValueError("Complex data not supported\n"
+                                  "{}\n".format(array))
+@@ -514,7 +520,13 @@ def check_array(array, accept_sparse=False, dtype="numeric", order=None,
+                     "your data has a single feature or array.reshape(1, -1) "
+                     "if it contains a single sample.".format(array))
+             # To ensure that array flags are maintained
+-            array = np.array(array, dtype=dtype, order=order, copy=copy)
++            # numpy>=2: copy=False means 'never copy' (raises if a copy is
++        # needed); the old semantics wanted 'copy only if needed',
++        # which is np.array without the copy kwarg on all versions.
++        if copy:
++            array = np.array(array, dtype=dtype, order=order, copy=True)
++        else:
++            array = np.array(array, dtype=dtype, order=order)
+ 
+         # in the future np.flexible dtypes will be handled like object dtypes
+         if dtype_numeric and np.issubdtype(array.dtype, np.flexible):

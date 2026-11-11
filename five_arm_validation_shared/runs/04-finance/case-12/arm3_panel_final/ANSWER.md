@@ -1,0 +1,3 @@
+Recommendation: Sell — the client who bought at the IPO should exit the position, and a client considering buying now should not.
+
+Why (one line): At roughly 10x 2018 revenue (~$22B market value on ~$2.2B) with a ~$1B net loss and no stated path to profitability, rides subsidized by driver incentives and insurance costs a persistent drag, a realistic ~$70B U.S. ground-transportation market versus the $1.2T "transportation as a service" framing, and a deeper-pocketed rival (Uber) going public in May 2019, the stock at $69 embeds the bull case without the financials to support it — so exit now, ahead of the standard 180-day IPO lockup expiration that will add selling pressure.

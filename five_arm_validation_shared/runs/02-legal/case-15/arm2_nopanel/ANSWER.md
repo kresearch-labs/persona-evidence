@@ -1,0 +1,20 @@
+**The clause and the issues it presents**
+
+Paragraph 4(c), read with paragraph 4(d) and the "null and void" clause, makes timely delivery of the prime landlord's *written* consent an express **condition precedent** to the Letter Agreement and the sublease — not a promise whose breach sounds only in damages. The dispute accordingly presents four issues:
+
+1. **Satisfaction of the condition** — whether a telephoned report that the consent "had been secured," with nothing delivered in writing by February 25, 1987, satisfied a condition requiring *written* consent *delivered* "on or before" that date.
+2. **Waiver** — whether the Subtenant intentionally relinquished its known right to insist on strict compliance.
+3. **Equitable estoppel** — whether the Sublandlord reasonably and detrimentally relied on any conduct or representation of the Subtenant.
+4. **Substantial performance** — whether a jury may excuse noncompliance with an express, date-certain condition because the obligor "substantially performed," and whether that question is one of law for the court or of fact for the jury.
+
+**Construction**
+
+The clause is unambiguous, so its construction — and the legal effect of noncompliance — is for the court, not the jury. The parties specified the exact act (obtaining the prime landlord's consent to the telephone communication linkage), its required form (*written*), the responsible party (the Sublandlord), the deadline ("on or before" the date extended to February 25, 1987), delivery of the consent to the Subtenant, and the consequence of failure (the agreement and sublease "deemed null and void and of no further force and effect," neither party having "any rights against nor obligations to the other"). Paragraph 4(d) confirms the design: the parties agreed *not to execute and exchange the Sublease* "unless and until" the paragraph 4(c) conditions were "timely satisfied." Required form plus a date certain plus a self-liquidating consequence is the drafting signature of a condition precedent with time of the essence. "Written consent" cannot be supplied by an oral report, however truthful; a phone call that consent "had been secured" delivered no writing and proved nothing in the form the parties demanded. Because the text is unambiguous, extrinsic evidence cannot vary it.
+
+**Enforcement**
+
+Conditions precedent must be strictly satisfied. The substantial-performance doctrine — a rule of construction that excuses minor defects in the *quality* of completed work, chiefly in construction contracts — has no application where the parties made a specific act, in a specific form, by a specific date, a condition whose failure extinguishes the agreement by its own terms. Charging the jury on substantial performance was error, and the verdict rests on an inapplicable theory. On the facts, the condition simply failed: nothing in writing was delivered by February 25, 1987, and the consent arrived 23 days late.
+
+The jury's own findings defeat the Sublandlord's remaining theories. Waiver requires intentional relinquishment of a known right; the Subtenant did the opposite — it let the deadline pass and declared the agreement invalid the very next day, the opposite of lulling the Sublandlord into believing the deadline would not be enforced. Equitable estoppel requires a misrepresentation or conduct inducing reasonable detrimental reliance; the Subtenant made none, changed no position, and expressly refused the requested extension. Nor did the Subtenant "prevent" satisfaction of the condition: it had no duty to extend a deadline it had already accommodated once.
+
+By the agreement's own terms, therefore, the Letter Agreement and sublease became null and void on February 25, 1987, and neither party has rights or obligations under them. The Sublandlord's loss flows from its own failure to deliver the written consent on time, not from any breach by the Subtenant; an award of $1.2 million in expectation damages under a sublease that never took effect cannot stand. The judgment notwithstanding the verdict should be reinstated and the appellate court's contrary order reversed.

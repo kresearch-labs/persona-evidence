@@ -1,0 +1,26 @@
+diff --git a/requests/models.py b/requests/models.py
+index 9c624d3c..a571df25 100644
+--- a/requests/models.py
++++ b/requests/models.py
+@@ -81,7 +81,7 @@ class RequestEncodingMixin(object):
+         """
+ 
+         if isinstance(data, (str, bytes)):
+-            return to_native_string(data)
++            return data
+         elif hasattr(data, 'read'):
+             return data
+         elif hasattr(data, '__iter__'):
+@@ -373,6 +373,12 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
+         if not path:
+             path = '/'
+ 
++        # A bytestring body may not be ASCII (or even text at all), so it must
++        # never be decoded here; but params are spliced into a text query
++        # string below, so convert them to the native string type first.
++        if isinstance(params, (str, bytes)):
++            params = to_native_string(params)
++
+         if is_py2:
+             if isinstance(scheme, str):
+                 scheme = scheme.encode('utf-8')

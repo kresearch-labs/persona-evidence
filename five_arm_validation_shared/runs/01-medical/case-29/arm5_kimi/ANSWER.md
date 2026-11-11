@@ -1,0 +1,3 @@
+Most likely diagnosis: Pulmonary–renal syndrome due to ANCA-associated small-vessel vasculitis (e.g., microscopic polyangiitis / granulomatosis with polyangiitis), presenting as diffuse alveolar hemorrhage with rapidly progressive (crescentic) glomerulonephritis.
+
+Justification: the combination of hemoptysis with severe hypoxia and bilateral pulmonary infiltrates (alveolar hemorrhage) plus acute kidney injury with an active nephritic urinary sediment (dysmorphic RBCs, RBC casts, 3+ proteinuria) defines a pulmonary–renal syndrome, most commonly caused by ANCA-associated vasculitis in this setting.

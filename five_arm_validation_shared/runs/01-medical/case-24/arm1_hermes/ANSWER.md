@@ -1,0 +1,9 @@
+# Arm 1 — Reference answer — 01-medical case-24
+
+**Most likely diagnosis: Cushing's disease — ACTH-secreting pituitary corticotroph macroadenoma/lesion — causing ACTH-dependent hypercortisolism with cyclic/pulsatile secretion, requiring repeated or inferior-petrosal-sampling-guided localization.**
+
+**One-line justification:** the screening is positive and ACTH-dependent: clinical Cushing's (rapid central weight gain, proximal myopathy, easy bruising, purple abdominal striae) with loss of diurnal rhythm (midnight cortisol 23 µg/dL), a morning ACTH that is inappropriately normal-to-high (106 pg/mL) rather than suppressed — defining ACTH-dependent hypercortisolism; failed high-dose (8 mg) dexamethasone suppression does NOT exclude Cushing's disease (30–50% of pituitary corticotroph tumors escape suppression), and the normal pituitary MRI is expected in 40–50% of ACTH microadenomas (MRI misses them routinely), while the normal chest/abdomen CT makes an occult ectopic source less likely and a cyclic/pulsatile secretor explains normalish single morning values (8 a.m. cortisol only marginally elevated, ACTH 106).
+
+**Brief differential:** ectopic ACTH syndrome (normal CT is not fully exclusionary — small bronchial/pancreatic NETs hide; follow-up with repeated ACTH/cortisol pairs, CRH test, and inferior petrosal sinus sampling localizes), pseudo-Cushing's from alcohol/depression (striae, bruising, and stigmata favor true Cushing's; serial late-night salivary cortisols separate), and adrenal incidentaloma (ACTH is high — excludes primary adrenal).
+
+**Key point:** in ACTH-dependent Cushing's with a normal pituitary MRI and failed high-dose suppression, the disease is still most often pituitary — the definitive localization is inferior petrosal sinus sampling with CRH, not a repeat scan.

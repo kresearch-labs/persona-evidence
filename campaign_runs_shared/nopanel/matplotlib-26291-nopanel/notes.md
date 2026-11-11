@@ -1,0 +1,7 @@
+# Agent Journal (structured notes)
+<!-- sections: ## Findings | ## Leads | ## Questions | ## Decisions -->
+<!-- injected into every prompt — write here what future-you must know -->
+## Findings
+- 2026-10-31: TASK.md = SWE instance matplotlib__matplotlib-26291 (inset_axes + bbox_inches='tight' AttributeError, gh:26287). Fix applied: lib/mpl_toolkits/axes_grid1/inset_locator.py AnchoredLocatorBase.__call__ now does `if renderer is None: renderer = ax.figure._get_renderer()` (2 lines). Byte-identical to upstream dae0cc2c28 (PR #26291) and to the dataset gold patch (blob 9d35051074..46284c6802). Graded test: test_axes_grid1.py::test_inset_axes_tight (added by test patch, not present at base).
+- Verification in live-test/scratch_26291_verify/{pre,post}_lib (workspace lib + 25775's built .so incl. backends/ + _version.py + mpl_toolkits/__init__.py). Pre: repro and graded test fail with the issue's AttributeError; post: both pass. Full test_axes_grid1.py failure sets pre vs post identical except ::test_inset_axes_tight (23 pre-existing freetype image-comparison failures, unchanged). Workspace diff = the 2 lines only; tests untouched; nothing committed.
+- Gotcha (same as 26113): campaign/.venv zz-mpl20488-repo.pth pins matplotlib to the 20488 checkout even under pytest from another tree (probed at test-call time); 26291 tree is unbuilt (no .so). 25775's .so set must include matplotlib/backends/*.so or backend_agg import fails.

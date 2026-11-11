@@ -1,0 +1,9 @@
+# Arm 1 — Reference answer — 01-medical case-26
+
+**Most likely diagnosis: erosive/inflammatory hand osteoarthritis with superimposed active synovitis — erosive osteoarthritis of the second and third MCP joints (the atypical MCP-predominant OA pattern), in a hypermobile professional skater with mechanical degenerative disease.**
+
+**One-line justification:** the pattern is degenerative, not autoimmune: Heberden's and Bouchard's nodes, CMC-joint subluxation, hip/knee crepitus, negative RF and anti-CCP, normal inflammatory markers, no chondrocalcinosis — classic osteoarthritis phenotype; BUT the atypical element is MCP-joint disease (normally a rheumatoid domain) with reduced joint space WITHOUT osteophytes at the second/third MCPs plus ultrasound power-Doppler 2+ synovitis — the signature of erosive/inflammatory OA in a hand loaded for years by professional ice skating and marked joint hypermobility (hypermobility both predisposes to OA and produces the atypical joint distribution); the "rheumatoid referral" suspicion is answered by seronegativity and the degenerative pattern elsewhere.
+
+**Brief differential:** seronegative early rheumatoid arthritis (MCP/wrist swelling fits, but the node-dominant phenotype, negative antibodies, normal ESR/CRP, and the osteophyte-poor-but-space-lost MCP radiographs point to erosive OA), pseudogout/CPPD (no chondrocalcinosis anywhere), and post-traumatic OA of the skating hand (true — the hypermobility + skating load is the mechanistic explanation woven into the diagnosis).
+
+**Key point:** OA can be inflammatory and MCP-predominant (erosive OA), especially in hypermobile patients with heavy joint use — seronegativity plus the node/CMC/hip degenerative constellation keeps the diagnosis out of rheumatoid territory; treatment is symptomatic, with inflammatory flares addressed directly.

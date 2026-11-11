@@ -1,0 +1,224 @@
+diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py
+index ddfd2b365..31d96b73a 100644
+--- a/sphinx/ext/autodoc/__init__.py
++++ b/sphinx/ext/autodoc/__init__.py
+@@ -26,7 +26,7 @@ from sphinx.config import ENUM, Config
+ from sphinx.deprecation import (RemovedInSphinx40Warning, RemovedInSphinx50Warning,
+                                 RemovedInSphinx60Warning)
+ from sphinx.environment import BuildEnvironment
+-from sphinx.ext.autodoc.importer import (get_class_members, get_module_members,
++from sphinx.ext.autodoc.importer import (ClassAttribute, get_class_members, get_module_members,
+                                          get_object_members, import_object)
+ from sphinx.ext.autodoc.mock import mock
+ from sphinx.locale import _, __
+@@ -92,7 +92,7 @@ SLOTSATTR = object()
+ 
+ def members_option(arg: Any) -> Union[object, List[str]]:
+     """Used to convert the :members: option to auto directives."""
+-    if arg is None or arg is True:
++    if arg in (None, True):
+         return ALL
+     elif arg is False:
+         return None
+@@ -111,14 +111,14 @@ def members_set_option(arg: Any) -> Union[object, Set[str]]:
+ 
+ def exclude_members_option(arg: Any) -> Union[object, Set[str]]:
+     """Used to convert the :exclude-members: option."""
+-    if arg is None:
++    if arg in (None, True):
+         return EMPTY
+     return {x.strip() for x in arg.split(',') if x.strip()}
+ 
+ 
+ def inherited_members_option(arg: Any) -> Union[object, Set[str]]:
+     """Used to convert the :members: option to auto directives."""
+-    if arg is None:
++    if arg in (None, True):
+         return 'object'
+     else:
+         return arg
+@@ -126,7 +126,7 @@ def inherited_members_option(arg: Any) -> Union[object, Set[str]]:
+ 
+ def member_order_option(arg: Any) -> Optional[str]:
+     """Used to convert the :members: option to auto directives."""
+-    if arg is None:
++    if arg in (None, True):
+         return None
+     elif arg in ('alphabetical', 'bysource', 'groupwise'):
+         return arg
+@@ -138,7 +138,7 @@ SUPPRESS = object()
+ 
+ 
+ def annotation_option(arg: Any) -> Any:
+-    if arg is None:
++    if arg in (None, True):
+         # suppress showing the representation of the object
+         return SUPPRESS
+     else:
+@@ -276,11 +276,12 @@ class ObjectMember(tuple):
+         return super().__new__(cls, (name, obj))  # type: ignore
+ 
+     def __init__(self, name: str, obj: Any, docstring: Optional[str] = None,
+-                 skipped: bool = False) -> None:
++                 class_: Any = None, skipped: bool = False) -> None:
+         self.__name__ = name
+         self.object = obj
+         self.docstring = docstring
+         self.skipped = skipped
++        self.class_ = class_
+ 
+ 
+ ObjectMembers = Union[List[ObjectMember], List[Tuple[str, Any]]]
+@@ -666,7 +667,7 @@ class Documenter:
+         The user can override the skipping decision by connecting to the
+         ``autodoc-skip-member`` event.
+         """
+-        def is_filtered_inherited_member(name: str) -> bool:
++        def is_filtered_inherited_member(name: str, obj: Any) -> bool:
+             if inspect.isclass(self.object):
+                 for cls in self.object.__mro__:
+                     if cls.__name__ == self.options.inherited_members and cls != self.object:
+@@ -676,6 +677,8 @@ class Documenter:
+                         return False
+                     elif name in self.get_attr(cls, '__annotations__', {}):
+                         return False
++                    elif isinstance(obj, ObjectMember) and obj.class_ is cls:
++                        return False
+ 
+             return False
+ 
+@@ -740,7 +743,7 @@ class Documenter:
+                 if self.options.special_members and membername in self.options.special_members:
+                     if membername == '__doc__':
+                         keep = False
+-                    elif is_filtered_inherited_member(membername):
++                    elif is_filtered_inherited_member(membername, obj):
+                         keep = False
+                     else:
+                         keep = has_doc or self.options.undoc_members
+@@ -760,14 +763,15 @@ class Documenter:
+                 if has_doc or self.options.undoc_members:
+                     if self.options.private_members is None:
+                         keep = False
+-                    elif is_filtered_inherited_member(membername):
++                    elif is_filtered_inherited_member(membername, obj):
+                         keep = False
+                     else:
+                         keep = membername in self.options.private_members
+                 else:
+                     keep = False
+             else:
+-                if self.options.members is ALL and is_filtered_inherited_member(membername):
++                if (self.options.members is ALL and
++                        is_filtered_inherited_member(membername, obj)):
+                     keep = False
+                 else:
+                     # ignore undocumented members if :undoc-members: is not given
+@@ -1584,7 +1588,11 @@ class ClassDocumenter(DocstringSignatureMixin, ModuleLevelDocumenter):  # type:
+                 self.add_line('   ' + _('Bases: %s') % ', '.join(bases), sourcename)
+ 
+     def get_object_members(self, want_all: bool) -> Tuple[bool, ObjectMembers]:
+-        members = get_class_members(self.object, self.objpath, self.get_attr, self.analyzer)
++        def convert(m: ClassAttribute) -> ObjectMember:
++            """Convert ClassAttribute object to ObjectMember."""
++            return ObjectMember(m.name, m.value, class_=m.class_, docstring=m.docstring)
++
++        members = get_class_members(self.object, self.objpath, self.get_attr)
+         if not want_all:
+             if not self.options.members:
+                 return False, []  # type: ignore
+@@ -1592,18 +1600,15 @@ class ClassDocumenter(DocstringSignatureMixin, ModuleLevelDocumenter):  # type:
+             selected = []
+             for name in self.options.members:  # type: str
+                 if name in members:
+-                    selected.append(ObjectMember(name, members[name].value,
+-                                                 docstring=members[name].docstring))
++                    selected.append(convert(members[name]))
+                 else:
+                     logger.warning(__('missing attribute %s in object %s') %
+                                    (name, self.fullname), type='autodoc')
+             return False, selected
+         elif self.options.inherited_members:
+-            return False, [ObjectMember(m.name, m.value, docstring=m.docstring)
+-                           for m in members.values()]
++            return False, [convert(m) for m in members.values()]
+         else:
+-            return False, [ObjectMember(m.name, m.value, docstring=m.docstring)
+-                           for m in members.values() if m.class_ == self.object]
++            return False, [convert(m) for m in members.values() if m.class_ == self.object]
+ 
+     def get_doc(self, encoding: str = None, ignore: int = None) -> List[List[str]]:
+         if encoding is not None:
+diff --git a/sphinx/ext/autodoc/importer.py b/sphinx/ext/autodoc/importer.py
+index d6e73d36a..1c5ea979e 100644
+--- a/sphinx/ext/autodoc/importer.py
++++ b/sphinx/ext/autodoc/importer.py
+@@ -14,7 +14,7 @@ import warnings
+ from typing import Any, Callable, Dict, List, Mapping, NamedTuple, Optional, Tuple
+ 
+ from sphinx.deprecation import RemovedInSphinx40Warning, deprecated_alias
+-from sphinx.pycode import ModuleAnalyzer
++from sphinx.pycode import ModuleAnalyzer, PycodeError
+ from sphinx.util import logging
+ from sphinx.util.inspect import (getannotations, getmro, getslots, isclass, isenumclass,
+                                  safe_getattr)
+@@ -251,8 +251,8 @@ class ClassAttribute:
+         self.docstring = docstring
+ 
+ 
+-def get_class_members(subject: Any, objpath: List[str], attrgetter: Callable,
+-                      analyzer: ModuleAnalyzer = None) -> Dict[str, ClassAttribute]:
++def get_class_members(subject: Any, objpath: List[str], attrgetter: Callable
++                      ) -> Dict[str, ClassAttribute]:
+     """Get members and attributes of target class."""
+     from sphinx.ext.autodoc import INSTANCEATTR
+ 
+@@ -297,23 +297,31 @@ def get_class_members(subject: Any, objpath: List[str], attrgetter: Callable,
+         except AttributeError:
+             continue
+ 
+-    # annotation only member (ex. attr: int)
+-    for cls in getmro(subject):
+-        try:
+-            for name in getannotations(cls):
+-                name = unmangle(cls, name)
+-                if name and name not in members:
+-                    members[name] = ClassAttribute(cls, name, INSTANCEATTR)
+-        except AttributeError:
+-            pass
+-
+-    if analyzer:
+-        # append instance attributes (cf. self.attr1) if analyzer knows
+-        namespace = '.'.join(objpath)
+-        for (ns, name), docstring in analyzer.attr_docs.items():
+-            if namespace == ns and name not in members:
+-                members[name] = ClassAttribute(subject, name, INSTANCEATTR,
+-                                               '\n'.join(docstring))
++    try:
++        for cls in getmro(subject):
++            # annotation only member (ex. attr: int)
++            try:
++                for name in getannotations(cls):
++                    name = unmangle(cls, name)
++                    if name and name not in members:
++                        members[name] = ClassAttribute(cls, name, INSTANCEATTR)
++            except AttributeError:
++                pass
++
++            # append instance attributes (cf. self.attr1) if analyzer knows
++            try:
++                modname = safe_getattr(cls, '__module__')
++                qualname = safe_getattr(cls, '__qualname__')
++                analyzer = ModuleAnalyzer.for_module(modname)
++                analyzer.analyze()
++                for (ns, name), docstring in analyzer.attr_docs.items():
++                    if ns == qualname and name not in members:
++                        members[name] = ClassAttribute(cls, name, INSTANCEATTR,
++                                                       '\n'.join(docstring))
++            except (AttributeError, PycodeError):
++                pass
++    except AttributeError:
++        pass
+ 
+     return members
+ 

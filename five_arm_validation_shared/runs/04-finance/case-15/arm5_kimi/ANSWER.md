@@ -1,0 +1,5 @@
+# Case 15 — Kraft Heinz (as of February 22, 2019)
+
+**Recommendation: SELL.**
+
+Justification: The investment thesis is broken on every leg — earnings power is still being rebased downward (2019 EBITDA guided ~15% below consensus and back to fiscal-2015 levels, margins down ~500 bps in two years, volumes driven by promotion rather than brand strength), the $15B write-down on Kraft and Oscar Mayer confirms management overpaid and over-earned the brands, the 36% dividend cut removes the income support that anchored the shareholder base, leverage remains elevated with the deleveraging-then-consolidate strategy now in doubt, and the SEC subpoena adds governance/credibility risk with likely further estimate cuts to come. Even after the ~27% drop, the stock is a value trap, not a bargain: with negative organic trends, secular headwinds in center-store packaged food, and no credible catalyst for re-rating, the risk/reward favors exiting rather than waiting for a turnaround that management has not yet shown it can deliver.

@@ -1,0 +1,19 @@
+diff --git a/sympy/core/mod.py b/sympy/core/mod.py
+index eae25630cc..ca715800cb 100644
+--- a/sympy/core/mod.py
++++ b/sympy/core/mod.py
+@@ -139,6 +139,14 @@ def doit(p, q):
+                 net = prod_mod1*prod_mod
+                 return prod_non_mod*cls(net, q)
+ 
++            if q.is_Integer and q is not S.One:
++                if all(t.is_integer for t in p.args):
++                    non_mod_l = [i % q if i.is_Integer else i for i in p.args]
++                    if any(iq is S.Zero for iq in non_mod_l):
++                        return S.Zero
++
++            p = Mul(*(non_mod_l + mod_l))
++
+         # XXX other possibilities?
+ 
+         # extract gcd; any further simplification should be done by the user

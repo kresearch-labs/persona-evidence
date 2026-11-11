@@ -1,0 +1,28 @@
+diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py
+index 3ca730e30..91e87cdc6 100644
+--- a/sphinx/domains/python.py
++++ b/sphinx/domains/python.py
+@@ -114,12 +114,17 @@ def _parse_annotation(annotation: str) -> List[Node]:
+             result.append(addnodes.desc_sig_punctuation('', ']'))
+             return result
+         elif isinstance(node, ast.Tuple):
+-            result = []
+-            for elem in node.elts:
+-                result.extend(unparse(elem))
+-                result.append(addnodes.desc_sig_punctuation('', ', '))
+-            result.pop()
+-            return result
++            if len(node.elts) == 0:
++                return [addnodes.desc_sig_punctuation('', '('),
++                        addnodes.desc_sig_punctuation('', ')')]
++            else:
++                result = []
++                for elem in node.elts:
++                    # elements
++                    result.extend(unparse(elem))
++                    result.append(addnodes.desc_sig_punctuation('', ', '))
++                result.pop()
++                return result
+         else:
+             raise SyntaxError  # unsupported syntax
+ 

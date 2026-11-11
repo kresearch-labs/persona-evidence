@@ -1,0 +1,1 @@
+Acute-on-chronic hypercalcemia (hypercalcemic crisis) due to chronic primary hyperparathyroidism — recurrent/persistent disease after parathyroidectomy, decompensated by hypovolemia and renal impairment.

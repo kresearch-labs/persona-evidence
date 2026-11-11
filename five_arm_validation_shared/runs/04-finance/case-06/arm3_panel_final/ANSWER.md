@@ -1,0 +1,3 @@
+Buy — for a patient, long-horizon investor, sized modestly.
+
+Why: at $97.94 (~$265B market cap) Meta traded at roughly 9x trailing earnings and ~5x the core ad business's trailing operating income after netting ~$30B of net cash — a price that already assumed permanent decline — while the still hugely cash-generative Family of Apps comfortably funds Reality Labs' $9.4B nine-month loss and the AI build, making the metaverse bet an affordable option rather than a solvency threat; the genuine risks (TikTok share gains, Apple's ATT targeting hit, macro ad weakness, and undisciplined metaverse spending unchecked by Zuckerberg's absolute voting control) warrant a smaller position and spending-discipline milestones, not avoidance.

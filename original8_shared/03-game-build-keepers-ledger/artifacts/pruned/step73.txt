@@ -1,0 +1,63 @@
+[pruned tool output]
+1|# Bootstrap: register the Keeper's Ledger game tick on slate post-tick.
+2|# Proven pattern (see journal: GAME_LOOP_TEST_FINAL PASS frames).
+3|import unreal, traceback
+4|
+5|LOG = "C:/Users/agent/work/project/test-runs/test3-gamedesigner/t3-keepers-20261020-140210/logs/bootstrap.log"
+6|
+7|def blog(m):
+8|    with open(LOG, "a") as f:
+9|        f.write(m + "\n")
+10|
+11|blog("=== BOOTSTRAP ===")
+12|try:
+13|    import sys, os
+14|    pydir = os.path.dirname(os.path.abspath(__file__))
+15|    if pydir not in sys.path:
+16|        sys.path.insert(0, pydir)
+17|    import keepers_ledger as KL
+18|    blog("module imported from %s" % pydir)
+19|
+20|    # deferred boot: wait for a player controller to exist, then boot once
+21|    state = {"booted": False, "handle": None, "last_t": None}
+22|
+23|    def tick(_unused_dt=None):
+24|        try:
+25|            import time as _t
+26|            now = _t.monotonic()
+27|            dt = 0.016 if state["last_t"] is None else min(0.1, now - state["last_t"])
+28|            state["last_t"] = now
+29|        try:
+30|            if not state["booted"]:
+31|                try:
+32|                    pc = unreal.EditorLevelLibrary  # noqa - touch to fail fast in -game? no
+33|                except Exception:
+34|                    pass
+35|                # find player controller via ObjectIterator (proven safe)
+36|                pc = None
+37|                n = 0
+38|                for o in unreal.ObjectIterator():
+39|                    n += 1
+40|                    if n > 120000:
+41|                        break
+42|                    try:
+43|                        if o.get_class().get_name() != "PlayerController":
+44|                            continue
+45|                        pc = o
+46|                        break
+47|                    except Exception:
+48|                        continue
+49|                if pc is not None:
+50|                    KL.S["pc"] = pc
+51|                    KL.boot()
+52|                    state["booted"] = KL.S["booted"]
+53|                    blog("booted=%s" % state["booted"])
+54|            else:
+55|                KL.game_tick(unreal.get_world_delta_seconds() if KL.S["world"] else 0.016)
+56|        except Exception:
+57|            blog("tick err: %s" % traceback.format_exc())
+58|
+59|    handle = unreal.register_slate_post_tick_callback(tick)
+60|    blog("registered slate post-tick handle=%s" % handle)
+61|except Exception:
+62|    blog("FAIL: %s" % traceback.format_exc())

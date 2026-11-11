@@ -1,0 +1,15 @@
+# Arm 1 — Reference answer — 04-finance case-12 (Lyft, as of April 2, 2019)
+
+**Recommendation: SELL (for clients who bought at the IPO); DO NOT BUY at current levels.**
+
+**Rationale (as known on the date):**
+
+1. **Lyft is the *worse* of the two ride-hailing IPOs to own, and the market agrees.** Below offer price within a week of debut, ~$22B valuation on ~$2.2B revenue with a ~$1B annual loss and — critically — **no stated strategy to reach profitability**. Compare the known landscape: Lyft is the smaller player (Uber's May IPO brings a deeper-pocketed rival with Eats, freight, and international scale), yet it faces identical driver-economics, insurance-drag, and incentive-subsidy problems. Buying the weaker competitor at a rich revenue multiple, pre-profit, in a sector where both majors lose a billion a year, is not contrarian; it's decorative.
+
+2. **The $1.2 trillion TAM claim deserves the bear treatment.** Sizing Lyft's opportunity at the entire U.S. ground transportation market assumes ride-hailing replaces car ownership at national scale — a generational behavioral assumption with no current evidence base, and one that would also require Lyft to *win* most of that replacement against Uber, automakers, and public transit. The honest addressable market (urban point-to-point paid rides, ~$70B U.S. ground transport, of which ride-hail captures a fraction) prices the company far more modestly. TAM slides are marketing documents; the judge is unit economics, which remain loss-making with drivers subsidized by incentives and insurance costs persistently rising.
+
+3. **The winner-take-most network thesis is undermined by observed competition.** Ride-hailing has proven *multi-homed*: riders carry both apps, drivers drive for both, and cities support several players. If the market is winner-take-most but Lyft is demonstrably #2 in its home market against a rival with deeper pockets arriving in May, the compounding-asset argument weakens — network effects in this business have produced persistent, expensive competition, not consolidation.
+
+4. **For the IPO buyer:** the position was a bet on debut momentum, which lasted one day. The investment case has not improved — it has merely been repriced ~4%. Selling a below-IPO position in a pre-profit company is not panic; it's closing a venture bet that the market has declined to validate, before the May Uber IPO (a direct liquidity and sentiment competitor) and the lockup expiry (insiders selling 180 days post-IPO, roughly September) add supply. There is no dividend, no profit timeline, and no balance-sheet floor.
+
+**Bottom line:** sell. Lyft may yet build a great company — but "transportation as a service" is a vision, not a financial model, and $22B for the #2 player losing $1B/year with no profitability path is a price that already assumes the vision. Revisit after the company demonstrates *any* stated, measurable path to positive unit economics — or after a materially lower entry price pays you for the risk.

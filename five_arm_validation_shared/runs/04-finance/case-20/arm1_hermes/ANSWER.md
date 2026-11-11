@@ -1,0 +1,15 @@
+# Arm 1 — Reference answer — 04-finance case-20 (Valeant, as of November 2, 2015)
+
+**Recommendation: SELL — for standard client accounts this is now a special-situations/forensic-accounting trade, not an investment; hold only for accounts that can tolerate a full accounting-restatement cycle.**
+
+**Rationale (as known on the date):**
+
+1. **The Philidor allegations strike the revenue line itself — the most dangerous place for an accounting question to land.** A short-seller report alleging fake invoices through a captive specialty pharmacy, followed by the company's own termination of the Philidor relationship, converts a "pricing controversy" into a "revenue-recognition credibility" problem. Every prior quarter's reported growth is now suspect until audited clarity arrives. The market read the October 30 "decisive" fix correctly: a -16% drop on damage control means investors want the audit trail, not the headline — and headline fixes that *don't* rally the stock are the classic tell of broken trust.
+
+2. **The business model itself is under political and payer attack, independently of the accounting.** The aggressive price-increase strategy already faced congressional and payer scrutiny before Philidor; the model's economics (acquire niche drugs, raise prices, leverage distribution) depend on payers and regulators tolerating it. That tolerance was visibly ending. Combined with the debt-financed acquisition strategy — which *requires* the equity currency and the debt market to stay open — the crisis threatens the engine, not just a quarter.
+
+3. **The valuation compression removes the "cheaper than peers" cushion.** Specialty-pharma peers de-rated from ~17x to ~12x 2016 earnings in weeks; now you can buy cleaner healthcare names at Valeant's multiple. The "fundamentals intact" management argument is precisely what a revenue-recognition crisis invalidates — until audits resolve, management's numbers are the subject, not the evidence.
+
+4. **The debt structure converts credibility loss into balance-sheet risk.** Valeant's acquisition model was debt-financed; a company whose revenue-recognition is in question, whose estimates are being cut (~$153M off Q4, ~5%), and whose ratings outlook deteriorates has a rising cost of that debt and shrinking ability to refinance. Equity in a levered company with an accounting crisis is a different security than equity in the same company three weeks ago.
+
+**Bottom line:** sell/exit. The questions raised (revenue recognition, pricing-model durability, debt capacity) require audited answers that will take quarters, and each interim disclosure this year has been worse than the last. The stock at $97 — down from $260 — is not "cheap," it's "unclear," and unclear accounting plus leverage is a combination that has historically ended in restructurings. Clients who want the franchise (the drug portfolio *is* real) can revisit after the audit and the restatement-style clarity arrive; until then, hold a forensic problem, not an investment.

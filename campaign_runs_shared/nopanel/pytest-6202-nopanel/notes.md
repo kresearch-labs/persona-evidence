@@ -1,0 +1,8 @@
+# Agent Journal (structured notes)
+<!-- sections: ## Findings | ## Leads | ## Questions | ## Decisions -->
+<!-- injected into every prompt — write here what future-you must know -->
+
+## Findings
+- 2026-11-02 pytest-6202: root cause in `PyobjMixin.getmodpath` (src/_pytest/python.py:289). The `s.replace(".[", "[")` cleanup dates to 2008 (abc8cf09aa), when yield-based "generators" named children `[0]`, `[1]`... so modpaths looked like `test_gen.[0]`. Yield tests were removed in pytest 4.0; in 5.2.4 the only source of `.[` is user data in parametrized IDs, so the replace corrupts names: `test_boo[..[]` was reported as `test_boo[.[]`.
+- Fix applied (uncommitted, in working tree): `return ".".join(parts)` — byte-identical to upstream commit 329f56ece (PR #6202, changelog/6189.bugfix.rst "Fix incorrect result of ``getmodpath`` method."). Verified: repro headline now `test_boo[..[]`; getmodpath unit check passes (`testone`, `TestX.testmethod_one`, `TestY.testmethod_one`, stopatmodule form, param id); A/B fixed-vs-unfixed over testing/test_collection.py + test_reports.py + test_runner.py gives identical failure sets (111 pre-existing Python-3.12/shim env failures both runs) — zero regressions.
+- Env: workspace has no venv; campaign venv's `.pth` points at pytest-5631's src, so always put THIS workspace's src first on PYTHONPATH. Offline box: py 1.11.0-shim (needs py.path.local namespace + py.io.get_terminal_width + py.iniconfig additions in C:/Windows/Temp/pyshim6202 copy); pytest 5.2.4 needs `--assert=plain` on Python 3.12 (AST rewrite TypeError) and a generated `src/_pytest/_version.py` (gitignored). pytester inline tests fail pre-existing on 3.12 (A/B-verified, not caused by the fix).

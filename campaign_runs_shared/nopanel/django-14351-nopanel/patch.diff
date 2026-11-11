@@ -1,0 +1,45 @@
+diff --git a/django/db/models/expressions.py b/django/db/models/expressions.py
+index 2b61a0bfd4..bf3dc95e96 100644
+--- a/django/db/models/expressions.py
++++ b/django/db/models/expressions.py
+@@ -1149,12 +1149,13 @@ class Subquery(BaseExpression, Combinable):
+         return sql, sql_params
+ 
+     def get_group_by_cols(self, alias=None):
++        # If this expression is referenced by an alias for an explicit GROUP BY
++        # through values() a reference to this expression and not the
++        # underlying .query must be returned to ensure external column
++        # references are not grouped against as well.
+         if alias:
+             return [Ref(alias, self)]
+-        external_cols = self.get_external_cols()
+-        if any(col.possibly_multivalued for col in external_cols):
+-            return [self]
+-        return external_cols
++        return self.query.get_group_by_cols()
+ 
+ 
+ class Exists(Subquery):
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index 6629a1fd51..e1a020f204 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -1062,6 +1062,18 @@ class Query(BaseExpression):
+             if col.alias in self.external_aliases
+         ]
+ 
++    def get_group_by_cols(self, alias=None):
++        # When a Query is used as a lookup's right-hand side (e.g. a queryset
++        # passed to __in) its column references must be resolved to decide if
++        # they are multivalued, as grouping against the subquery itself would
++        # compile it with all of its selected columns.
++        if alias:
++            return [Ref(alias, self)]
++        external_cols = self.get_external_cols()
++        if any(col.possibly_multivalued for col in external_cols):
++            return [self]
++        return external_cols
++
+     def as_sql(self, compiler, connection):
+         sql, params = self.get_compiler(connection=connection).as_sql()
+         if self.subquery:

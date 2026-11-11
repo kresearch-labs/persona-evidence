@@ -1,0 +1,20 @@
+diff --git a/django/db/migrations/writer.py b/django/db/migrations/writer.py
+index a59f0c8dcb..69a7c972a4 100644
+--- a/django/db/migrations/writer.py
++++ b/django/db/migrations/writer.py
+@@ -174,8 +174,13 @@ class MigrationWriter:
+             imports.add("from django.db import migrations")
+ 
+         # Sort imports by the package / module to be imported (the part after
+-        # "from" in "from ... import ..." or after "import" in "import ...").
+-        sorted_imports = sorted(imports, key=lambda i: i.split()[1])
++        # "from" in "from ... import ..." or after "import" in "import ...") and
++        # place all import module statements before from module import object
++        # statements, in each section, per Django coding style and isort
++        # defaults.
++        sorted_imports = sorted(
++            imports, key=lambda i: (i.split()[0] != "import", i.split()[1])
++        )
+         items["imports"] = "\n".join(sorted_imports) + "\n" if imports else ""
+         if migration_imports:
+             items["imports"] += (

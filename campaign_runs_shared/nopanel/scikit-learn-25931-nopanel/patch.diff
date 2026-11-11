@@ -1,0 +1,38 @@
+diff --git a/sklearn/ensemble/_iforest.py b/sklearn/ensemble/_iforest.py
+index 4d6c1c3f0b..c76901eb34 100644
+--- a/sklearn/ensemble/_iforest.py
++++ b/sklearn/ensemble/_iforest.py
+@@ -345,7 +345,11 @@ class IsolationForest(OutlierMixin, BaseBagging):
+             return self
+ 
+         # else, define offset_ wrt contamination parameter
+-        self.offset_ = np.percentile(self.score_samples(X), 100.0 * self.contamination)
++        # Note: we call the private `_score_samples` to avoid re-validating X
++        # which would remove the feature names and trigger a spurious
++        # "X does not have valid feature names, but IsolationForest was fitted
++        # with feature names" warning.
++        self.offset_ = np.percentile(self._score_samples(X), 100.0 * self.contamination)
+ 
+         return self
+ 
+@@ -430,11 +434,18 @@ class IsolationForest(OutlierMixin, BaseBagging):
+         """
+         # code structure from ForestClassifier/predict_proba
+ 
+-        check_is_fitted(self)
+-
+         # Check data
+         X = self._validate_data(X, accept_sparse="csr", dtype=np.float32, reset=False)
+ 
++        return self._score_samples(X)
++
++    def _score_samples(self, X):
++        """Private version of score_samples without input validation.
++
++        Input validation would remove feature names, so we disable it.
++        """
++        check_is_fitted(self)
++
+         # Take the opposite of the scores as bigger is better (here less
+         # abnormal)
+         return -self._compute_chunked_score_samples(X)

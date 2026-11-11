@@ -1,0 +1,116 @@
+diff --git a/sympy/concrete/delta.py b/sympy/concrete/delta.py
+index 014d5b577d..a219d4844f 100644
+--- a/sympy/concrete/delta.py
++++ b/sympy/concrete/delta.py
+@@ -310,6 +310,11 @@ def deltasummation(f, limit, no_piecewise=False):
+     # try to extract a simple KroneckerDelta term
+     delta, expr = _extract_delta(g, x)
+ 
++    if (delta is not None) and (delta.delta_range is not None):
++        dinf, dsup = delta.delta_range
++        if (limit[1] - dinf <= 0) == True and (limit[2] - dsup >= 0) == True:
++            no_piecewise = True
++
+     if not delta:
+         return summation(f, limit)
+ 
+diff --git a/sympy/functions/special/tensor_functions.py b/sympy/functions/special/tensor_functions.py
+index 547f1b7f4a..6b61b09c6c 100644
+--- a/sympy/functions/special/tensor_functions.py
++++ b/sympy/functions/special/tensor_functions.py
+@@ -133,7 +133,7 @@ class KroneckerDelta(Function):
+     is_integer = True
+ 
+     @classmethod
+-    def eval(cls, i, j):
++    def eval(cls, i, j, delta_range=None):
+         """
+         Evaluates the discrete delta function.
+ 
+@@ -155,6 +155,17 @@ def eval(cls, i, j):
+         # indirect doctest
+ 
+         """
++        if delta_range is not None:
++            dinf, dsup = delta_range
++            if (dinf - i > 0) == True:
++                return S.Zero
++            if (dinf - j > 0) == True:
++                return S.Zero
++            if (dsup - i < 0) == True:
++                return S.Zero
++            if (dsup - j < 0) == True:
++                return S.Zero
++
+         diff = i - j
+         if diff.is_zero:
+             return S.One
+@@ -171,7 +182,15 @@ def eval(cls, i, j):
+         # following lines will check if inputs are in order
+         # if not, will return KroneckerDelta with correct order
+         if i is not min(i, j, key=default_sort_key):
+-            return cls(j, i)
++            if delta_range:
++                return cls(j, i, delta_range)
++            else:
++                return cls(j, i)
++
++    @property
++    def delta_range(self):
++        if len(self.args) > 2:
++            return self.args[2]
+ 
+     def _eval_power(self, expt):
+         if expt.is_positive:
+diff --git a/sympy/matrices/expressions/matexpr.py b/sympy/matrices/expressions/matexpr.py
+index b4d759836e..f8995c3a0b 100644
+--- a/sympy/matrices/expressions/matexpr.py
++++ b/sympy/matrices/expressions/matexpr.py
+@@ -7,6 +7,8 @@
+ from sympy.core.compatibility import range
+ from sympy.core.sympify import SympifyError, sympify
+ from sympy.functions import conjugate, adjoint
++from sympy.core.relational import Eq
++from sympy.functions.special.tensor_functions import KroneckerDelta
+ from sympy.matrices import ShapeError
+ from sympy.simplify import simplify
+ 
+@@ -476,10 +478,12 @@ def conjugate(self):
+         return self
+ 
+     def _entry(self, i, j):
+-        if i == j:
++        eq = Eq(i, j)
++        if eq is S.true:
+             return S.One
+-        else:
++        elif eq is S.false:
+             return S.Zero
++        return KroneckerDelta(i, j, (0, self.cols - 1))
+ 
+     def _eval_determinant(self):
+         return S.One
+diff --git a/sympy/matrices/expressions/tests/test_matexpr.py b/sympy/matrices/expressions/tests/test_matexpr.py
+index dbc5485948..075a20f5c2 100644
+--- a/sympy/matrices/expressions/tests/test_matexpr.py
++++ b/sympy/matrices/expressions/tests/test_matexpr.py
+@@ -91,6 +91,19 @@ def test_Identity_doit():
+     assert isinstance(Inn.doit().rows, Mul)
+ 
+ 
++def test_Identity_symbolic_entry():
++    # issue 12419: Identity(n)[i, j] with symbolic indices must not
++    # evaluate to 0; it should give a KroneckerDelta bounded by the
++    # matrix shape so that sums over its elements evaluate correctly.
++    i, j = symbols('i j', integer=True)
++    In = Identity(n)
++    assert In[i, j] == KroneckerDelta(i, j, (0, n - 1))
++    assert In[0, 0] == 1
++    assert In[0, 1] == 0
++    assert Sum(In[i, j], (i, 0, n - 1)).doit() == 1
++    assert Sum(Sum(In[i, j], (i, 0, n - 1)), (j, 0, n - 1)).doit() == n
++
++
+ def test_addition():
+     A = MatrixSymbol('A', n, m)
+     B = MatrixSymbol('B', n, m)

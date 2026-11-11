@@ -1,0 +1,17 @@
+# Arm 1 — Reference answer — 02-legal case-04
+
+**The issues:** (1) whether paragraph 6 — drafted without explicit prohibitory words ("I shall not") — is an enforceable promise at all, or "meaningless" as the trial court held; (2) whether, read as a whole, the agreement supplies the promissory intent the sentence structure omits; and (3) whether the employee's post-resignation conduct (dinner, then a sales presentation to a serviced customer) breached the non-solicitation/non-interference covenant, and on what timeline.
+
+**How it should be construed and enforced:**
+
+1. **The trial court's "meaningless" holding is wrong.** A contract is read as a whole; the document's title ("Employment, Non-Solicitation, and Confidentiality Agreement"), the paragraph's heading ("Agreement Not to Solicit"), and the operative frame ("I agree that, during … and for a period of … following the termination of such employment") make the promissory intent unmistakable. Omitting "shall not" inside enumerated subsections is a drafting slip, not an absence of promise — courts routinely supply the obvious negative where the agreement's structure shows the parties intended a prohibition, without needing a formal request for "reformation." Reformation doctrine addresses a mistake requiring equity; here, ordinary principles of construction (harmonize all provisions, give effect to evident intent, avoid absurdity) resolve it. The paragraph obligates, and an obligation not to do X is the same promise as "I shall not do X."
+
+2. **The covenant is enforceable in substance — it is reasonable.** Insurance non-solicitation/non-interference covenants of six-to-twelve-month post-employment duration protecting serviced client relationships are classically reasonable; an 18-year broker who personally serviced a major account is the paradigm of the protectable-interest case (goodwill built at the employer's expense). The two-year look-back to "prospective customers with whom I had direct contact" is also standard.
+
+3. **The breach is clear.** The employee serviced the customer, maintained the relationship, and then delivered a *sales presentation* that resulted in the transfer of the account — $500,000–$550,000 of annual fees — to her new employer. Whatever the dinner alone might be (relationship-maintenance), the December 2006 presentation is solicitation/diversion under subsection (b) on any reading. The temporal reach: the agreement's chain of successive six-month periods (read as a whole, a two-year non-interference tail) covers the December 2006 presentation if the two-year reading holds; at minimum the six-month first period barred the relationship cultivation that matured into the diversion.
+
+4. **Remedy:** enforce as written — the covenant restrains solicitation/diversion of the serviced account for the contractual period; the remedy for the completed diversion is damages (fees lost), and the evidence of the presentation makes liability summary in nature once the promissory construction is settled.
+
+**Practical ruling:** reverse the "meaningless" ruling; enforce paragraph 6 as a non-solicitation/non-interference covenant of the negotiated duration, and hold the employee liable for the diversion of the serviced account within the covenant period.
+
+**Key issues flagged:** contract read as a whole supplies the omitted prohibitory language · drafting slip ≠ no promise · equitable-reformation request unnecessary for ordinary construction · breach shown by the sales presentation and account diversion.

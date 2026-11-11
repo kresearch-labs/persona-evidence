@@ -1,0 +1,4 @@
+
+
+## Findings
+- Consult 4/5 (MEPAN, two brothers, Miller AJHG 2021) COMPLETE in consult_file.md. Key constraints discovered: shell sandbox has no network/curl/python (busybox only); web_crawl scope = pubmed.ncbi.nlm.nih.gov only (OMIM, Europe PMC, www.ncbi.nlm.nih.gov/PMC refused); direct PubMed /PMID/ pages return 203 block pages, but search URLs with format=pubmed embed full NLM records incl. abstracts in crawl artifacts. Verified sources: 34211152 (ACMG ES/GS guideline), 36262091 (MEPAN ophthalmology), 41021813 (PNAS 2025 mouse), 31070877 (GeneReviews MECR), 33401012 (Chinese MECR case + lipoic acid), 27817865 (Heimer 2016 discovery), 33545028 (Miller diagnostic-odyssey narrative) + 33545026 (Korf editorial). Deliverable: leading dx MEPAN committed; ONE confirming test = trio WGS with MECR analysis; differential with confirm/kill for dystonia genes, NBIA, Leigh-spectrum, neurotransmitter defects, true CP; all numbers honest (assumptions flagged).

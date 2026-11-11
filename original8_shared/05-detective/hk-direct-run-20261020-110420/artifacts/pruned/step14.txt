@@ -1,0 +1,47 @@
+[pruned tool output]
+60|    cited = [s for s in sentences if re.search(r"\[S\d+\]", s)]
+61|    used = set(re.findall(r"\[(S\d+)\]", text))
+62|    missing = sorted(used - ids)
+63|    unused = sorted(ids - used)
+64|    cov = (len(cited) / len(sentences)) if sentences else 0.0
+65|    print(f"sentences: {len(sentences)} | cited: {len(cited)} | "
+66|          f"coverage: {cov:.2f} (min {a.min_coverage})")
+67|    print(f"ledger ids: {len(ids)} | used: {len(used)}")
+68|    if missing:
+69|        print("INVALID CITATION IDS:", ", ".join(missing))
+70|    if unused:
+71|        print("ledger entries never cited:", ", ".join(unused))
+72|    ok = (not missing) and cov >= a.min_coverage
+73|    print("VERIFY:", "PASS" if ok else "FAIL")
+74|    sys.exit(0 if ok else 1)
+75|
+76|
+77|def cmd_render(_a):
+78|    for e in load():
+79|        print(f"- **[{e['id']}]** {e.get('publication','')} ({e.get('date','')}) "
+80|              f"— {e.get('type','')}. {e.get('url','')}\n"
+81|              + (f"  {e['notes']}\n" if e.get("notes") else ""))
+82|
+83|
+84|def main():
+85|    ap = argparse.ArgumentParser()
+86|    sub = ap.add_subparsers(dest="cmd")
+87|    # bare invocation = list (scorecard probes run tools with no args)
+88|    ap.set_defaults(fn=None)
+89|    p = sub.add_parser("add"); p.add_argument("id")
+90|    p.add_argument("--url"); p.add_argument("--pub"); p.add_argument("--date")
+91|    p.add_argument("--type"); p.add_argument("--notes"); p.add_argument("--replace", action="store_true")
+92|    p.set_defaults(fn=cmd_add)
+93|    p = sub.add_parser("list"); p.set_defaults(fn=cmd_list)
+94|    p = sub.add_parser("verify"); p.add_argument("report")
+95|    p.add_argument("--min-coverage", type=float, default=0.5)
+96|    p.set_defaults(fn=cmd_verify)
+97|    p = sub.add_parser("render"); p.set_defaults(fn=cmd_render)
+98|    a = ap.parse_args()
+99|    if a.fn is None:
+100|        a.fn = cmd_list
+101|    a.fn(a)
+102|
+103|
+104|if __name__ == "__main__":
+105|    main()

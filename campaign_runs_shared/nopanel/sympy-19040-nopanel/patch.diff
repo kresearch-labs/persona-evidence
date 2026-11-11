@@ -1,0 +1,184 @@
+diff --git a/sympy/polys/compatibility.py b/sympy/polys/compatibility.py
+index 217a481b46..ae4e692d23 100644
+--- a/sympy/polys/compatibility.py
++++ b/sympy/polys/compatibility.py
+@@ -100,6 +100,7 @@
+ from sympy.polys.densetools import dup_mirror
+ from sympy.polys.densetools import dup_scale
+ from sympy.polys.densetools import dup_shift
++from sympy.polys.densetools import dmp_shift
+ from sympy.polys.densetools import dup_transform
+ from sympy.polys.densetools import dup_compose
+ from sympy.polys.densetools import dmp_compose
+@@ -505,6 +506,8 @@ def dup_scale(self, f, a):
+         return self.from_dense(dup_scale(self.to_dense(f), a, self.domain))
+     def dup_shift(self, f, a):
+         return self.from_dense(dup_shift(self.to_dense(f), a, self.domain))
++    def dmp_shift(self, f, a):
++        return self.from_dense(dmp_shift(self.to_dense(f), a, self.ngens-1, self.domain))
+     def dup_transform(self, f, p, q):
+         return self.from_dense(dup_transform(self.to_dense(f), self.to_dense(p), self.to_dense(q), self.domain))
+ 
+diff --git a/sympy/polys/densetools.py b/sympy/polys/densetools.py
+index fb52236de7..e1fe5871c2 100644
+--- a/sympy/polys/densetools.py
++++ b/sympy/polys/densetools.py
+@@ -891,6 +891,45 @@ def dup_shift(f, a, K):
+     return f
+ 
+ 
++def dmp_shift(f, a, u, K):
++    """
++    Evaluate efficiently Taylor shift ``f(X + A)`` in ``K[X]``.
++
++    Examples
++    ========
++
++    >>> from sympy import symbols, ring, ZZ
++    >>> x, y = symbols('x y')
++    >>> R, _, _ = ring([x, y], ZZ)
++
++    >>> p = x**2*y + 2*x*y + 3*x + 4*y + 5
++
++    >>> R.dmp_shift(R(p), [ZZ(1), ZZ(2)])
++    x**2*y + 2*x**2 + 4*x*y + 11*x + 7*y + 22
++
++    >>> p.subs({x: x + 1, y: y + 2}).expand()
++    x**2*y + 2*x**2 + 4*x*y + 11*x + 7*y + 22
++
++    """
++    if not u:
++        return dup_shift(f, a[0], K)
++
++    if dmp_zero_p(f, u):
++        return f
++
++    a0, a1 = a[0], a[1:]
++
++    f = [dmp_shift(c, a1, u - 1, K) for c in f]
++    n = len(f) - 1
++
++    for i in range(n, 0, -1):
++        for j in range(0, i):
++            afj = dmp_mul_ground(f[j], a0, u - 1, K)
++            f[j + 1] = dmp_add(f[j + 1], afj, u - 1, K)
++
++    return f
++
++
+ def dup_transform(f, p, q, K):
+     """
+     Evaluate functional transformation ``q**n * f(p/q)`` in ``K[x]``.
+diff --git a/sympy/polys/factortools.py b/sympy/polys/factortools.py
+index c6a5f9f063..86a053f70d 100644
+--- a/sympy/polys/factortools.py
++++ b/sympy/polys/factortools.py
+@@ -53,8 +53,7 @@
+     dup_primitive, dmp_ground_primitive,
+     dmp_eval_tail,
+     dmp_eval_in, dmp_diff_eval_in,
+-    dmp_compose,
+-    dup_shift, dup_mirror)
++    dup_shift, dmp_shift, dup_mirror)
+ 
+ from sympy.polys.euclidtools import (
+     dmp_primitive,
+@@ -1154,12 +1153,11 @@ def dmp_ext_factor(f, u, K):
+     if len(factors) == 1:
+         factors = [f]
+     else:
+-        H = dmp_raise([K.one, s*K.unit], u, 0, K)
+-
+         for i, (factor, _) in enumerate(factors):
+             h = dmp_convert(factor, u, K.dom, K)
+             h, _, g = dmp_inner_gcd(h, g, u, K)
+-            h = dmp_compose(h, H, u, K)
++            a = [s*K.unit]*(u + 1)
++            h = dmp_shift(h, a, u, K)
+             factors[i] = h
+ 
+     return lc, dmp_trial_division(F, factors, u, K)
+diff --git a/sympy/polys/sqfreetools.py b/sympy/polys/sqfreetools.py
+index 1783a7744a..8799984544 100644
+--- a/sympy/polys/sqfreetools.py
++++ b/sympy/polys/sqfreetools.py
+@@ -13,12 +13,12 @@
+     dup_LC, dmp_ground_LC,
+     dmp_zero_p,
+     dmp_ground,
+-    dup_degree, dmp_degree,
++    dup_degree, dmp_degree, dmp_degree_in,
+     dmp_raise, dmp_inject,
+     dup_convert)
+ from sympy.polys.densetools import (
+-    dup_diff, dmp_diff,
+-    dup_shift, dmp_compose,
++    dup_diff, dmp_diff, dmp_diff_in,
++    dup_shift, dmp_shift,
+     dup_monic, dmp_ground_monic,
+     dup_primitive, dmp_ground_primitive)
+ from sympy.polys.euclidtools import (
+@@ -71,8 +71,19 @@ def dmp_sqf_p(f, u, K):
+     """
+     if dmp_zero_p(f, u):
+         return True
+-    else:
+-        return not dmp_degree(dmp_gcd(f, dmp_diff(f, 1, u, K), u, K), u)
++
++    for i in range(u + 1):
++        fp = dmp_diff_in(f, 1, i, u, K)
++
++        if dmp_zero_p(fp, u):
++            continue
++
++        gcd = dmp_gcd(f, fp, u, K)
++
++        if dmp_degree_in(gcd, i, u) != 0:
++            return False
++
++    return True
+ 
+ 
+ def dup_sqf_norm(f, K):
+@@ -140,9 +151,9 @@ def dmp_sqf_norm(f, u, K):
+ 
+     >>> s == 1
+     True
+-    >>> f == x*y + y**2 + K([QQ(-1), QQ(0)])*y
++    >>> f == x*y + y**2 - K.unit*x - 3*K.unit*y - 2
+     True
+-    >>> r == X**2*Y**2 + 2*X*Y**3 + Y**4 + Y**2
++    >>> r == X**2*Y**2 + X**2 + 2*X*Y**3 + 2*X*Y + Y**4 + 5*Y**2 + 4
+     True
+ 
+     """
+@@ -153,7 +164,7 @@ def dmp_sqf_norm(f, u, K):
+         raise DomainError("ground domain must be algebraic")
+ 
+     g = dmp_raise(K.mod.rep, u + 1, 0, K.dom)
+-    F = dmp_raise([K.one, -K.unit], u, 0, K)
++    a = [-K.unit] * (u + 1)
+ 
+     s = 0
+ 
+@@ -164,7 +175,7 @@ def dmp_sqf_norm(f, u, K):
+         if dmp_sqf_p(r, u, K.dom):
+             break
+         else:
+-            f, s = dmp_compose(f, F, u, K), s + 1
++            f, s = dmp_shift(f, a, u, K), s + 1
+ 
+     return s, f, r
+ 
+@@ -252,7 +263,10 @@ def dmp_sqf_part(f, u, K):
+     if K.is_negative(dmp_ground_LC(f, u, K)):
+         f = dmp_neg(f, u, K)
+ 
+-    gcd = dmp_gcd(f, dmp_diff(f, 1, u, K), u, K)
++    gcd = f
++    for i in range(u + 1):
++        gcd = dmp_gcd(gcd, dmp_diff_in(f, 1, i, u, K), u, K)
++
+     sqf = dmp_quo(f, gcd, u, K)
+ 
+     if K.is_Field:

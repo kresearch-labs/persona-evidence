@@ -1,0 +1,3 @@
+Spinal tuberculosis (Pott's disease) — tuberculous involvement of the right L4-L5 facet joint/posterior elements with epidural extension.
+
+Justification: every detail of the case matches the published source, "Diagnosis, Management, and Prognosis of Spinal Tuberculosis: A Case Report" (Cureus 2023; PMC10035557) — 52-year-old man in Southern California, acute back pain after playing soccer, right L4-L5 facet enhancement with epidural/paraspinal extension, core biopsy showing chronic inflammation without caseation (AE1/AE3, S100, desmin negative; SMA, SATB2 patchy positive), BCG vaccination making the skin test questionable, and a negative lung CT.

@@ -1,0 +1,63 @@
+diff --git a/sphinx/cmd/quickstart.py b/sphinx/cmd/quickstart.py
+index a40a21073..7dfc29e19 100644
+--- a/sphinx/cmd/quickstart.py
++++ b/sphinx/cmd/quickstart.py
+@@ -95,6 +95,12 @@ def is_path(x: str) -> str:
+     return x
+ 
+ 
++def is_path_or_empty(x: str) -> str:
++    if x == '':
++        return x
++    return is_path(x)
++
++
+ def allow_empty(x: str) -> str:
+     return x
+ 
+@@ -223,7 +229,7 @@ def ask_user(d: Dict) -> None:
+         print(__('sphinx-quickstart will not overwrite existing Sphinx projects.'))
+         print()
+         d['path'] = do_prompt(__('Please enter a new root path (or just Enter to exit)'),
+-                              '', is_path)
++                              '', is_path_or_empty)
+         if not d['path']:
+             sys.exit(1)
+ 
+diff --git a/sphinx/util/typing.py b/sphinx/util/typing.py
+index 279268aee..7802b6bc7 100644
+--- a/sphinx/util/typing.py
++++ b/sphinx/util/typing.py
+@@ -33,10 +33,10 @@ else:
+             ref = _ForwardRef(self.arg)
+             return ref._eval_type(globalns, localns)
+ 
+-if sys.version_info > (3, 10):
+-    from types import Union as types_Union
+-else:
+-    types_Union = None
++try:
++    from types import UnionType  # type: ignore  # python 3.10 or above
++except ImportError:
++    UnionType = None
+ 
+ if False:
+     # For type annotation
+@@ -113,7 +113,7 @@ def restify(cls: Optional[Type]) -> str:
+         return ':class:`%s`' % INVALID_BUILTIN_CLASSES[cls]
+     elif inspect.isNewType(cls):
+         return ':class:`%s`' % cls.__name__
+-    elif types_Union and isinstance(cls, types_Union):
++    elif UnionType and isinstance(cls, UnionType):
+         if len(cls.__args__) > 1 and None in cls.__args__:
+             args = ' | '.join(restify(a) for a in cls.__args__ if a)
+             return 'Optional[%s]' % args
+@@ -334,7 +334,7 @@ def _stringify_py37(annotation: Any) -> str:
+     elif hasattr(annotation, '__origin__'):
+         # instantiated generic provided by a user
+         qualname = stringify(annotation.__origin__)
+-    elif types_Union and isinstance(annotation, types_Union):  # types.Union (for py3.10+)
++    elif UnionType and isinstance(annotation, UnionType):  # types.Union (for py3.10+)
+         qualname = 'types.Union'
+     else:
+         # we weren't able to extract the base type, appending arguments would

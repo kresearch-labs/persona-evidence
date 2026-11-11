@@ -1,0 +1,3 @@
+Hypercalcemic (parathyroid) crisis due to primary hyperparathyroidism — acute, severe, symptomatic hypercalcemia from worsening/recurrent primary hyperparathyroidism, precipitated by hypovolemia and acute kidney injury.
+
+Why: PTH is inappropriately elevated (253.4 pg/mL) despite severe hypercalcemia (corrected Ca ≈ 15.9 mg/dL), pointing to PTH-mediated disease, while every secondary cause was excluded — normal 25-OH vitamin D, normal PTHrP, negative SPEP/UPEP, and only mildly elevated calcitriol as expected from PTH-driven 1α-hydroxylase activity; the low anion gap of 5 is itself explained by hypoalbuminemia (corrected AG ≈ 8) plus hypercalcemia, so it is a red herring rather than a clue to myeloma.

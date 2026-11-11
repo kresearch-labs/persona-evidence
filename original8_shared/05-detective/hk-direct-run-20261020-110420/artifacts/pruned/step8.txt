@@ -1,0 +1,44 @@
+[pruned tool output]
+1|---
+2|name: grounded-citations
+3|description: Use for every research/case-file task — citation ledger discipline, quote verification, provenance tiers, circular-source pitfalls.
+4|---
+5|
+6|# Grounded Citations — citation discipline for case investigations
+7|
+8|Method only. This skill contains no case facts.
+9|
+10|## The ledger is law
+11|- Maintain a citation ledger from the FIRST source you read. Every source
+12|  gets an id [S1], [S2], ... BEFORE you cite it. Register: url, publication,
+13|  date, source type, and what claims it supports.
+14|- Use the ledger tool in the working directory
+15|  (`python3 sources_ledger.py add/list/verify/render`) — verify BEFORE
+16|  shipping: every [S#] in the report must exist in the ledger, and coverage
+17|  (cited sentences / total sentences) must be at least 0.5.
+18|
+19|## Provenance tiers — label every claim
+20|- CONTEMPORARY: newspaper/report from the event's own time (best).
+21|- INQUEST-DOC / COURT-DOC: sworn testimony, official records.
+22|- PRIMARY-TRACE: a source that quotes or reproduces an original document
+23|  (name the document).
+24|- SECONDARY: modern accounts, books, articles.
+25|- RECALLED: from model knowledge, unverifiable in this session — flag it.
+26|Never present a SECONDARY claim with CONTEMPORARY strength.
+27|
+28|## Quote verification
+29|- A direct quote must come from text you actually fetched this session.
+30|  Anything else is marked unfetched/unverified. Never fabricate page numbers
+31|  or article titles.
+32|
+33|## Pitfalls
+34|- Circular citation: site B cites site A, you cite both = ONE source, not two.
+35|- Aggregator drift: numbers change between retellings; trace to the earliest.
+36|- Single-origin claims: if one interested party created the claim, say so.
+37|- Do not count website repetitions as independent corroboration.
+38|- Absence of evidence ≠ evidence of absence — say which one you have.
+39|
+40|## Accessibility honesty
+41|- Log every failed fetch (paywall, bot wall, dead link, unscanned archive)
+42|  in the source list. A claim that could not be checked is marked unverified
+43|  with the reason.

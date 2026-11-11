@@ -1,0 +1,3 @@
+Recommendation: Buy — accumulate on weakness, with position size capped for tail risk.
+
+Justification: The $185M settlement is financially immaterial against roughly $22B of annual net income (even multi-billion-dollar follow-on legal costs would dent EPS only modestly), and at ~11–12x forward earnings, ~1.8x tangible book and a ~3.2% dividend yield the market had already priced a multi-year remediation drag — so a best-in-class deposit and cross-sell franchise argues this is a reputational storm, not a structural repricing, provided the client accepts the unresolved DOJ/state-AG investigations and the Fed's approval gate on dividend growth as the residual risks to monitor.

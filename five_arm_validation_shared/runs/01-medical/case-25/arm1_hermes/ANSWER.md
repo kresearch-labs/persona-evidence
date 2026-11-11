@@ -1,0 +1,9 @@
+# Arm 1 — Reference answer — 01-medical case-25
+
+**Most likely diagnosis: Wilson disease (hepatolenticular degeneration) — presenting with neuropsychiatric Wilsonian disease: tremor, ataxic dysarthria, parkinsonian-ataxic gait, depression with suicidality, Kayser-Fleischer corneal ring (golden-brown discoloration), and "cirrhosis of lean NAFLD" that was actually Wilsonian cirrhosis all along.**
+
+**One-line justification:** the neurology-psychiatry-liver triad in a young immigrant woman — bilateral hand tremor, ataxic dysarthria, falls, incontinence, depression with suicidal ideation, plus a **golden-brown corneal margin visible by pen-light (Kayser-Fleischer ring)**, brain MRI with T2/FLAIR signal in thalami/midbrain/pons (the classic Wilsonian distribution), a remote "cirrhosis" diagnosis mislabeled as lean NAFLD in a patient with no true risk factors (the "possible alcohol" question was the decoy and was denied), and mild normocytic anemia with elevated RDW (Coombs-negative hemolysis accompanies Wilsonian liver failure) — the diagnosis is Wilson's disease, confirmed by serum ceruloplasmin, 24-hour urinary copper, and slit-lamp examination.
+
+**Brief differential:** alcoholic cirrhosis with hepatic encephalopathy (encephalopathy is episodic with asterixis, not a progressive tremor-ataxia-dystonia picture; MRI distribution differs), metabolic encephalopathy (doesn't produce the MRI pattern or KF ring), multiple sclerosis/paraneoplastic disease (liver cirrhosis + KF ring unify), and early Huntington's (age and liver findings favor Wilson's).
+
+**Key point:** cirrhosis "without a reason" in a young adult plus neuropsychiatric decline equals Wilson's disease until ceruloplasmin and 24-hour urine copper close the question — it is one of the few treatable causes of cirrhosis with reversible neurology if chelation starts in time.

@@ -1,0 +1,49 @@
+diff --git a/django/core/management/base.py b/django/core/management/base.py
+index 463e4e8665..360fc87eb0 100644
+--- a/django/core/management/base.py
++++ b/django/core/management/base.py
+@@ -312,11 +312,10 @@ class BaseCommand:
+             '--force-color', action='store_true',
+             help='Force colorization of the command output.',
+         )
+-        if self.requires_system_checks:
+-            parser.add_argument(
+-                '--skip-checks', action='store_true',
+-                help='Skip system checks.',
+-            )
++        parser.add_argument(
++            '--skip-checks', action='store_true',
++            help='Skip system checks.',
++        )
+         self.add_arguments(parser)
+         return parser
+ 
+diff --git a/django/core/management/commands/migrate.py b/django/core/management/commands/migrate.py
+index a65500d76a..2130ad2c36 100644
+--- a/django/core/management/commands/migrate.py
++++ b/django/core/management/commands/migrate.py
+@@ -23,10 +23,6 @@ class Command(BaseCommand):
+     requires_system_checks = []
+ 
+     def add_arguments(self, parser):
+-        parser.add_argument(
+-            '--skip-checks', action='store_true',
+-            help='Skip system checks.',
+-        )
+         parser.add_argument(
+             'app_label', nargs='?',
+             help='App label of an application to synchronize the state.',
+diff --git a/django/core/management/commands/runserver.py b/django/core/management/commands/runserver.py
+index d9fb088350..a4917035f5 100644
+--- a/django/core/management/commands/runserver.py
++++ b/django/core/management/commands/runserver.py
+@@ -115,7 +115,8 @@ class Command(BaseCommand):
+         quit_command = 'CTRL-BREAK' if sys.platform == 'win32' else 'CONTROL-C'
+ 
+         self.stdout.write("Performing system checks...\n\n")
+-        self.check(display_num_errors=True)
++        if not options['skip_checks']:
++            self.check(display_num_errors=True)
+         # Need to check migrations here, so can't use the
+         # requires_migrations_check attribute.
+         self.check_migrations()

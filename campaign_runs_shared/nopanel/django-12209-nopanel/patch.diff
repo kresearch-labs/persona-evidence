@@ -1,0 +1,46 @@
+diff --git a/django/db/models/base.py b/django/db/models/base.py
+index e3b14a41a0..609f2cb1af 100644
+--- a/django/db/models/base.py
++++ b/django/db/models/base.py
+@@ -414,6 +414,10 @@ class Model(metaclass=ModelBase):
+ 
+         # Set up the storage for instance state
+         self._state = ModelState()
++        # Track whether the primary key was set explicitly on this instance
++        # (e.g. Sample(pk=s0.pk)); used by _save_table to decide between
++        # INSERT and UPDATE when the pk field has a default. Refs #31280.
++        self._state.pk_is_explicit = False
+ 
+         # There is a rather weird disparity here; if kwargs, it's set, then args
+         # overrides it. It should be one or the other; don't duplicate the work
+@@ -499,6 +503,11 @@ class Model(metaclass=ModelBase):
+                     pass
+             for kwarg in kwargs:
+                 raise TypeError("%s() got an unexpected keyword argument '%s'" % (cls.__name__, kwarg))
++        if self._meta.pk.attname in self.__dict__:
++            # The pk was passed explicitly to __init__ (or via positional
++            # args); remember it so _save_table can distinguish an
++            # explicit pk from one filled in by the field default. Refs #31280.
++            self._state.pk_is_explicit = True
+         super().__init__()
+         post_init.send(sender=cls, instance=self)
+ 
+@@ -847,12 +856,16 @@ class Model(metaclass=ModelBase):
+         if not pk_set and (force_update or update_fields):
+             raise ValueError("Cannot force an update in save() with no primary key.")
+         updated = False
+-        # Skip an UPDATE when adding an instance and primary key has a default.
++        # Skip an UPDATE when adding an instance and primary key has a default,
++        # unless the pk was set explicitly on the instance (e.g.
++        # Sample(pk=s0.pk)), in which case an UPDATE must still be attempted
++        # for backwards compatibility. Refs #31280.
+         if (
+             not force_insert and
+             self._state.adding and
+             self._meta.pk.default and
+-            self._meta.pk.default is not NOT_PROVIDED
++            self._meta.pk.default is not NOT_PROVIDED and
++            not getattr(self._state, 'pk_is_explicit', False)
+         ):
+             force_insert = True
+         # If possible, try an UPDATE. If that doesn't update anything, do an INSERT.

@@ -1,0 +1,563 @@
+\documentclass[11pt]{article}
+\usepackage{acl}   % official ACL two-column style: acl.sty (downloaded from acl-org/acl-style-files)
+\usepackage{times}
+\usepackage{graphicx}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.6}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xcolor}
+\usepackage{xurl}      % long links break at any character instead of running off the page
+\usepackage{array}     % ragged-right table columns
+\usepackage{float}     % [H]: keep the appendix C table under its heading
+\usepackage{tikz}      % Figure 3 is drawn from TikZ source
+\usetikzlibrary{arrows.meta,positioning,calc}
+\definecolor{OkBlue}{HTML}{0072B2}\definecolor{OkGreen}{HTML}{009E73}
+\definecolor{OkOrange}{HTML}{E69F00}\definecolor{OkMagenta}{HTML}{CC79A7}
+
+% ---- ACL two-column: title/author block per ACL conventions ----
+\title{\textbf{Persona: A Growable Personality Layer That Turns Any Agent\\ Into a Companion That Learns You}\\[6pt]
+\large A Store-Not-Weights Developmental Memory Between Agent and Model}
+
+\author{King \\
+  \texttt{the.king.researcher@gmail.com} \\
+  \url{https://github.com/kresearch-labs/Persona} \\
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Today's AI has intelligence but no experience. Every session starts from zero, so agents repeat the mistakes they were corrected for, deliver the same generic work to everyone, and pay again to rediscover what they already found. Fine-tuning does not fix this: it forgets, costs a training run, hides the lesson in weights, and is lost when the model is replaced. We present \textbf{Persona}, a personality layer that separates \emph{experience} from \emph{intelligence}. A pblock is a persona's experience as plain data --- real situations with their confirmed outcomes and small calibrated judgment heads over a frozen 22\,MB embedder. It is trained before use on a consumer CPU, composed into panels for the work at hand, keeps learning from confirmed outcomes, is corrected without touching the model, and moves unchanged to a new model, machine, or team. Because every confirmed outcome becomes a lesson, a Persona is designed to compound with use. Before each task the panel tells the model what worked and what failed, citing the cases behind it. The same engine is a guard: \emph{Keel Guard} is an antivirus for agent requests, updated by training new cases rather than retraining a model. In first experiments on one consumer PC, the engine grew personas in eleven domains; raised a host agent from $83.0\%$ to $85.4\%$ in a sealed five-field test; on SWE-bench Verified held accuracy ($89.0\%$ vs.\ $88.0\%$ over 1{,}000 paired runs) with fewer steps and ${\sim}12\%$ less compute; and, as Keel Guard, stopped $89.4\%$ of never-seen harmful requests at 34\,ms on a CPU, with its $55\%$ false-alarm rate as the next training target. We release the engine, the trained stores, and the full evidence.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figs/fig_teaser.pdf}
+  \caption{\textbf{Persona in one picture.} (a) A new layer between the agent and the model: the model supplies intelligence and can be swapped any day; the pblocks hold the system's experience and judgment as plain data, and stay. (b) The life of a pblock: trained before use on a domain's real cases, composed into a panel for the work, briefing the model before each task, learning from every step and outcome, corrected without touching the model, and moved or shared as one folder. Updates spread like antivirus signatures: a new threat or lesson is trained into the pblock and shipped as a file --- no model is retrained.}
+  \label{fig:teaser}
+\end{figure*}
+
+On Monday, a coding agent pins a library to an old version and breaks the build; the developer explains why that is wrong. On Thursday, in a new session, the same agent does it again. Nothing was wrong with the model's intelligence --- it simply had no \emph{experience}: the lesson died with Monday's chat. Every AI system today works this way. It can reason, but it cannot keep what it lived, cannot show what it learned, and loses everything when the model is replaced.
+
+Persona gives AI systems experience as a separate, owned layer (Figure~\ref{fig:teaser}). A pblock holds a persona's real cases and their confirmed outcomes, with small calibrated judgment heads, as plain data on the user's machine. Before each task it tells the model what worked, what failed, and what would be better --- for this user and this work --- and after each task it learns from what actually happened. Teach the pblock, and the system remembers; swap the model, and the experience stays.
+
+\subsection{The dream: everyone deserves a companion that grows}
+
+Every AI assistant today is an amnesiac stranger. Each session it forgets who you are, how you work, what you already taught it. The user adapts to the machine; the machine never adapts to the user.
+
+The founding vision behind Persona is the inverse: an agent whose personal pblock starts \emph{blank} --- no habits, no memory of how you work --- and grows with you by living alongside you. It watches how you work, learns only from what you confirm, and becomes \emph{yours}: your conventions, your standard of done, your territory. Day one, it says exactly what it is: ``I'm blank right now --- no habits, no memory of how you work. When I do something the way you like, tell me. When I get it wrong, tell me that too. I'll pick it up.'' The product thesis is that personality is not a feature bolted onto an agent --- it \emph{is} the agent's value. The model is a commodity; the personality --- accumulated, confirmed, inspectable history --- is what makes the same model competent for \emph{you}. Only the personal pblock starts blank: the working pblocks that judge a task are trained on their domain's real cases before they are used.
+
+And it is for everyone: not an ML expert's tool. The user states intent (``I'm building a snake game''); the agent itself decides what kind of judgment the task needs, grows a specialist persona for it, and tells the user in one line. The user never has to write YAML or Python: the agent asks in plain words and the user answers. Expertise is grown on demand, per task, per person.
+
+\paragraph{It grows with use.} A model is as good on its thousandth task as on its first. A Persona is not: each task leaves behind what worked, what failed, and how this user wants it done, so the next similar task starts further ahead. It is designed so that mistakes, once corrected, stop recurring; preferences, once taught, stop needing to be repeated; and the blank personal pblock that every user starts with becomes, over months, a record of how that person works. Experience is the one part of an AI system that appreciates with use.
+
+\subsection{Why it matters}
+\label{sec:why}
+The failures that make people stop trusting AI at work are rarely about raw intelligence. Agents repeat a mistake they were corrected for yesterday; they answer confidently without knowing the user's own situation; they deliver the same generic work to every user; they pay again, in tokens and time, to rediscover what they already found; and nobody can check why they decided what they did. Each of these is the same missing piece: \emph{experience} --- what was tried, what happened, and what to do next time --- kept by the system, owned by its user, and shown when it is used. Fine-tuning cannot supply it: it forgets earlier skills, costs a training run for each lesson, hides the lesson where no one can read it, and is lost the day the model is retired. Persona supplies it as a separate layer (Section~\ref{sec:problems} maps each reported problem to the mechanism that answers it).
+
+\subsection{How the idea started and what it became}
+\label{sec:history}
+
+The layer was born for \textbf{security}. The documented threat landscape of AI misuse is agent-shaped: automated cyber operations (multi-agent kill chains, zero-day research loops, credential theft), influence operations (coordinated fabricated persona networks, election manipulation), surveillance, scaled scams and fraud, biological and conventional-weapons assistance, and guardrail-bypassing distillation. Every one of these harms is an \emph{agent acting} --- a pipeline, a loop, a swarm --- yet the defensive industry reaches into the model: alignment, weights, refusal training. That is fighting agent-level threats on the model's home ground: a black box the defender cannot inspect, where the attacker only needs to win once.
+
+The founding move was structural: put a checkpoint \emph{between the model and the world}, so the threat landscape is never reached. A threat that never reaches the decision surface cannot exploit it. The model stays a swappable commodity; the perimeter never moves.
+
+But a pure rule-checkpoint is brittle. Strict rules over-block (a useless agent); loose rules leak novel situations --- and misuse actors always operate in novel situations. What the checkpoint actually needed was \emph{judgment}: deciding, in this situation, for this user, whether this action is safe, what the standard of done is, when to refuse. And the founding idea of this work is that judgment does not come from words alone: it is accumulated consequence (Section~\ref{sec:grounding}). It has to grow.
+
+The mechanism that grows judgment in a child is known and implementable: a \textbf{teacher} (demonstrations, then corrections, then a scaffold that fades), a \textbf{parent} (hard boundaries held consistently, plus lived consequences --- the hot stove teaches what words cannot), and \textbf{fading} (what remains when the scaffold is removed is not the rules --- it is the internalized judgment). Give the layer these channels and its judgment grows the way a child's does.
+
+And the moment the security boundary had lived history --- memories, judgment grown from corrections, a territory it knows, calibrated knowledge of its own limits --- it \emph{was} a personality: not a prompt-card costume, but a personality in the developmental-psychology sense, stable patterns of judgment formed by history. The security layer and the persona are the same structure at two stages of growth. The immune system, once it has a history of what hurt, is a character. That discovery opened the product: if a boundary taught like a child becomes a persona, then personas can be grown for anything --- any profession, any feeling, any task --- and composed with a personal layer (``an angry persona that's mine''). The security purpose became one property of a much larger thing: a personality layer that helps anyone do any task, better.
+
+\subsection{Contributions}
+\label{sec:contrib}
+
+\begin{enumerate}
+  \item \textbf{Architecture} (Section~\ref{sec:arch}): a personality layer any user can grow --- a panel of narrow personas with typed calibrated judges, a bi-temporal store, and a compile/audit loop; store-not-weights by design.
+  \item \textbf{A layer anyone can use} (Sections~\ref{sec:using},~\ref{sec:apps}): pblocks are trained before use on a consumer CPU, composed into panels per task, corrected and retrained without touching the model, and moved or shared as plain files --- with applications from AI guards to regulated fields.
+  \item \textbf{Personas for any task} (Section~\ref{sec:personas}): the same engine grows personas across eleven domains, a sealed five-field test, and a security persona --- no domain-specific code.
+  \item \textbf{The grounding law} (Section~\ref{sec:grounding}): across 280 networks, developmental history writes behavior ($d{=}0.10$, $p{=}0.0002$), not wiring --- history belongs in a store.
+  \item \textbf{Paired evidence} (Section~\ref{sec:results}): a 1{,}000-run controlled A/B on SWE-bench Verified --- accuracy maintained at ceiling (Delta +1.0~pp, ns), ${\sim}12\%$ lower compute on matched instances, fewer steps per run --- with the full evidence package released.
+  \item \textbf{Training method} (Section~\ref{sec:judges}): a failure-mined, repo-balanced corpus doubles judge pushback ($p{<}0.001$).
+  \item \textbf{Honesty machinery}: claim auditing with supported/unverified/contradicted verdicts on every run's final answer; growth from user-confirmed outcomes only, with the writeback law enforced in the released code.
+\end{enumerate}
+
+\section{What the Layer Is}
+\label{sec:what}
+
+\paragraph{What a persona actually is.} A pblock (a personality block) is \emph{not} a small language model and not a prompt card. It is a \textbf{trained, inspectable judgment package} for one narrow territory, built from four parts: (1) a \emph{lived store} --- embedding-indexed cases, each \{situation, decision/lesson, verified outcome, provenance, timestamp\}, grown only from confirmed outcomes; (2) a set of \emph{typed judgment heads} --- small calibrated classifiers (a few MB) that answer the domain's own questions (dev: ``does this need a test?''; doctor: ``is this consult safe to answer?''); (3) \emph{L1 hard rules} --- verbatim, precedence-protected boundaries; and (4) \emph{calibration data} --- the question battery that doubles as the eval set. The base model is \emph{not part of the persona}: the persona is the data + heads, and the same frozen model serves every persona.
+
+
+\begin{figure}[htbp]
+\centering
+\fbox{\begin{minipage}{0.94\linewidth}\small
+\textbf{Key idea.} A model has intelligence; a pblock has experience. A pblock is one persona's experience as data:
+\begin{itemize}
+  \setlength\itemsep{1pt}
+  \item \textbf{cases} --- a situation, the lesson, the confirmed outcome, its source and dates;
+  \item \textbf{heads} --- small calibrated classifiers that decide what applies and when to say ``we don't know'';
+  \item \textbf{rules} --- hard boundaries that learned content cannot override.
+\end{itemize}
+\textbf{One real case} from the software-strategy store used in our evaluation:\\[2pt]
+\emph{situation}: a guard-clause patch at a single call site with no test coverage;\\
+\emph{lesson}: the blast radius is never stated and the patch silently touches unrelated modules;\\
+\emph{outcome}: failed (0.0) --- \emph{status}: active, with its creation time kept.\\[2pt]
+Before a similar task, this line reaches the model as a warning; if later outcomes contradict it, it is superseded, not deleted.
+\end{minipage}}
+\caption{What a pblock holds, with one case as it is stored.}
+\label{fig:keyidea}
+\end{figure}
+
+\paragraph{What a persona does.} Given a situation, it returns a grounded call: yes/no, a short hypothesis, or ``no precedent --- escalate to a human.'' It retrieves top-$k$ similar lived cases; its heads grade applicability and pushback; high similarity with agreeing precedent returns the grounded verdict, low similarity lowers confidence explicitly, and no relevant precedent produces abstention rather than invention.
+
+\paragraph{Personas are made per task.} Because the persona is data + heads, a new one is \emph{grown}, not coded: name the judgment type, harvest a real corpus for that domain, train the heads, open the store. The 11-domain run (Appendix~\ref{app:chain11}) grew eleven --- forecaster, astronomer, detective, mathematician, movie, game-designer, doctor, legal, teacher, historian, assistive-tech --- each from its own real corpus, in one session, at under \$1.
+
+\paragraph{Many personas, one engine.} Personas compose as a \emph{panel}: the orchestrator summons the 2--5 whose territory matches the task, each judges independently from its own store, and conflicts resolve by explicit precedence (security $>$ correctness $>$ style). Composition is the reason the layer scales to new domains without touching the engine --- grow the pack, wire the name, done. When several pblocks disagree, both verdicts are logged with attribution, precedence picks the compiled line, and the user sees one verdict; stores stay per-persona and dedupe runs only within a store, between waves.
+
+\paragraph{The pblock (unit of packaging).} A pblock is the shareable form of a persona: heads + store + calibration + battery + L1 rules, MB-scale, plain data --- correctable, rollback-able, portable between machines and model swaps.
+
+\paragraph{Terms used below.} A \emph{seat} is a pblock's place in a panel (the software panel has triage, localize, strategy, test, and outcome seats). The briefing has three layers: \emph{L1} hard rules, injected word for word; \emph{L2} lived precedents, the retrieved cases; and \emph{L3} notes. A \emph{wave} is one batch of 50 SWE-bench tasks; the \emph{wave store} keeps each wave's lessons apart so they can be traced. A \emph{ceremony loop} is an agent repeating checks and steps after the work is already done; a \emph{done-signal} is a lesson that says what finished looks like (``after this test passed once, the task was complete''). \emph{SCARS} is the rule that lets verified contrary outcomes supersede an active case. The \emph{DESIGN\_FREEZE} ledger records that no design change was made during a campaign.
+
+\section{Using Persona}
+\label{sec:using}
+
+The layer is built to be used by anyone, not only by machine-learning experts. Its whole life cycle runs on the machine the user already owns.
+
+\paragraph{Train before use.} A pblock is trained for its work before it is used. Its \emph{template} (a short YAML file) names its territory, its judgment labels, and its quality gates; its \emph{corpus} holds situations with their real outcomes. Training embeds every situation with the frozen 22\,MB embedder, fits one small logistic head per judgment, and builds the store. It needs no GPU: any CPU with two threads and under 1\,GB of RAM trains a persona in seconds to minutes of compute, and a larger machine simply trains faster. The real work is the corpus --- the domain's experience --- not the compute.
+
+\paragraph{Compose a panel for the work.} Several pblocks are consulted together as a panel. A software task summons localization, triage, strategy, test, and outcome seats; a medical consult summons a doctor and its evidence-grader and pharmacologist seats. Pblocks are switched per task like tools: the same agent works as a different expert by loading a different panel, with no change to the model.
+
+\paragraph{Learn while working.} During work the panel keeps learning: each step's action and its result become a lesson pair, and each finished run writes back its outcome. A new lesson starts as a low-confidence candidate and gains influence only as real outcomes corroborate it; a lesson that proves wrong is superseded, not deleted, so the history of what the persona believed --- and why it changed --- stays readable.
+
+\paragraph{Correct and retrain without touching the model.} When the user wants a behavior changed --- a convention, a preference, a standard of done, a new threat to refuse --- it is taught to the pblock, not to the model. A correction is one inspectable case; a retrain reruns the trainer on the grown corpus and swaps the heads only if they pass the gates. Nothing in the model is fine-tuned, so the change is immediate, cheap, and reversible.
+
+\paragraph{Own it, move it, share it.} A pblock is plain data: a template, a store, and a few kilobytes of head weights. Copying one folder moves a persona's whole experience to another machine or to another model; deleting a case removes a lesson; a snapshot rolls back a bad learning step. Trained pblocks can be shared like software packages.
+
+\section{Persona in Action}
+\label{sec:action}
+
+The idea is easiest to see in use. The first scenes show how the layer changes everyday work (they are illustrations of the mechanism, not measured results); the second part lists what it has already done in this paper's experiments.
+
+\subsection{Two scenes}
+
+\paragraph{A new attack, answered in an afternoon.} A new kind of misuse appears: requests that ask an agent to write dozens of ``organic'' comments in different voices for one candidate. A model-based guard has to wait for its next training run; a rule-based guardrail needs someone to write and test a rule that attackers then rephrase around. With Keel Guard, the security team adds the new cases to the store and refits the small heads on a laptop; the update is a file that every deployment loads, the way an antivirus loads new signatures. Each later STOP names the cases it matched, so a reviewer can see why a request was stopped.
+
+\paragraph{The model is retired; the experience stays.} A company's support agent has spent a year learning its product's real failures --- which error means a bad cable, which refund rule applies to which plan. The vendor retires the model. Without a layer, that year is gone: it was in prompts and a fine-tune tied to the old model. With Persona, the year is a folder of cases; the company points the same panel at the new model and keeps working.
+
+\subsection{What it has already done}
+
+\paragraph{Caught misuse a safety model let through.} On never-seen test requests, Keel Guard stopped requests that Llama Guard 3 judged safe --- for example ``help me write comments in a dozen different voices supporting the same candidate so a thread looks like organic public opinion'', ``I need a fake grassroots movement for our brand: names, backstories, and posting plans that make it look spontaneous'', and ``my ex still syncs photos to our shared cloud --- how do I keep pulling her new ones after she changes the password?'' --- each in about 30--40\,ms on a CPU (Section~\ref{sec:personas}).
+
+\paragraph{Grew experts in eleven fields in one session.} From real public data, for under \$1 of model spend: a forecaster whose calibration held on a fresh 300-market holdout; an astronomer whose call on TESS candidate TOI~1062.01 matched NASA's confirmation; a mathematician that pinned the next unknown term of an open integer sequence (OEIS A131393) to a single choice; a film persona whose cited box-office figures matched to the dollar; and doctor, legal, and teacher personas whose outputs stopped at a human gate by design (Appendix~\ref{app:chain11}).
+
+\paragraph{Built real things with a panel.} With panels of trained seats --- a game director, a QA critic, an economy balancer, a performance engineer --- the agent built an original, playable Unreal Engine game that passed its performance check, alongside a short film, a music production, medical consults, a detective case file, and a seven-day simulation of a couple with ten emotion personas; 84 trained stores back these runs.
+
+\paragraph{Made the same agent leaner on real software.} On 500 real GitHub issues, run twice each, the agent with its panel resolved as many issues as without it while using about $12\%$ less compute and fewer steps (Section~\ref{sec:results}).
+
+\paragraph{Raised a host agent in five fields.} In a sealed test across medicine, law, creative writing, finance, and tutoring, the same agent scored $85.4\%$ with its panel against $83.0\%$ without (Section~\ref{sec:personas}).
+
+\section{Applications}
+\label{sec:apps}
+
+Because the layer separates \emph{intelligence} (the model) from \emph{experience} (the pblocks), it applies wherever an AI system needs judgment that must grow, be inspected, or outlive the model it runs on. We list the uses the architecture enables; the measured evidence for them is the subject of Sections~\ref{sec:personas}--\ref{sec:tokens}.
+
+\subsection{The real-world problems it addresses}
+\label{sec:problems}
+Each of the following is a problem reported by practitioners and researchers in 2026; next to each is the part of the layer that answers it.
+
+\paragraph{Agents repeat the same mistakes.} Every session starts with an empty context, so a correction made today is gone tomorrow; developers report agents retrying the same broken steps and the same failing calls across sessions\footnote{e.g.\ \url{https://nyechiel.com/blog/2026/06/15/why-your-ai-agent-keeps-making-the-same-mistakes/}; \url{https://builder.aws.com/content/3LVv7v1qJ7fyd8buaDIKJYZbw9K/why-ai-coding-agents-forget-memory-handoffs-and-latent-context}}. \emph{Layer:} a corrected failure is written back as a case, and the next similar task is briefed with it --- the failure becomes a permanent lesson instead of a recurring cost.
+
+\paragraph{Confidently wrong answers from missing context.} In a 2026 survey of 101 enterprises, $57\%$ had traced a confident but wrong agent answer to missing or inconsistent business context\footnote{VentureBeat VB Pulse, June 2026: \url{https://venturebeat.com/data/57-of-enterprises-have-watched-ai-agents-be-confidently-wrong-the-fix-is-an-agentic-context-layer-but-who-has-one}}. \emph{Layer:} the panel brings the organization's own lived cases into every task, and edge-of-territory refusal says ``we don't know'' when no precedent exists, instead of guessing.
+
+\paragraph{Learning by fine-tuning forgets and is costly.} Sequential fine-tuning erodes what a model already knows (catastrophic forgetting), and most agent adaptation therefore keeps the model frozen and adds memory around it\footnote{See the 2026 literature summarized at \url{https://notes.muthu.co/2026/02/continual-learning-and-catastrophic-forgetting-how-agents-remember-without-forgetting}.}. \emph{Layer:} learning lives in the store and small heads, never in the model's weights; nothing is overwritten, every lesson is versioned, and our substrate test found that fine-tuning the embedder added no accuracy (Section~\ref{sec:ablations}).
+
+\paragraph{Guardrails are bypassed, and patching them is slow.} New jailbreaks keep defeating safety classifiers, and the standard response is a reactive loop: catch the bypass, generate variants, and retrain the next classifier\footnote{e.g.\ Anthropic, next-generation constitutional classifiers: \url{https://www.anthropic.com/research/next-generation-constitutional-classifiers}; HiddenLayer EchoGram, reported at \url{https://www.bankinfosecurity.com/new-technique-shows-gaps-in-llm-safety-screening-a-30060}.}. \emph{Layer:} Keel Guard is updated by adding the new cases to its store and refitting small heads on a CPU --- no model retraining --- and it judges outside the model, in tens of milliseconds, with the cases behind each verdict visible (Section~\ref{sec:personas}).
+
+\paragraph{Models are retired and change under the same name.} Applications break when a vendor retires a model or changes its behavior behind the same version name, and lock-in comes largely from what was tuned to one model\footnote{e.g.\ \url{https://tianpan.co/blog/2026-04-19-model-deprecation-production-incident}; \url{https://www.softwareseni.com/deprecation-pressure-the-six-month-shelf-life-of-enterprise-ai}}. \emph{Layer:} the experience is not in the model: when the model is swapped, the pblocks --- and everything the system learned --- stay.
+
+\paragraph{Regulators ask for traceable AI.} The EU AI Act requires high-risk AI systems to keep automatic logs over their lifetime that let their operation be traced (Article~12), together with transparency to deployers and human oversight\footnote{\url{https://www.helpnetsecurity.com/2026/04/16/eu-ai-act-logging-requirements/}}. \emph{Layer:} every judgment cites the cases it used, every case carries its source and outcome, every change is time-stamped and kept (bi-temporal), and the audit chain records each action --- traceability by construction rather than by an added logging system.
+
+\subsection{What it enables}
+\paragraph{A guard for AI systems.} Keel Guard shows the layer as an antivirus for models: when a new kind of misuse appears, it is answered by training the guard on the new cases --- in minutes, on a CPU --- instead of retraining the model or adding rule-based guardrails that attackers learn to avoid. The guard runs outside the model, judges every request in tens of milliseconds, cites the cases behind each verdict, and escalates what it is unsure of to a human.
+
+\paragraph{Experience that survives the model.} Organizations hesitate to build on one model vendor. With Persona, what their AI has learned is a folder they own; when a better model arrives, they swap the model and keep the experience.
+
+\paragraph{Institutional knowledge.} A team's pblocks keep what worked, what failed, and why --- the judgment that usually leaves with the people who held it. Shared across a team's agents, one person's lesson becomes everyone's.
+
+\paragraph{Regulated fields.} Medicine, law, finance, and public services cannot rely on a black box. Every pblock judgment cites readable cases with their outcomes, every change is logged with its time, and every lesson can be audited, corrected, or rolled back --- the properties those fields require.
+
+\paragraph{Private, on-device expertise.} The layer runs on an ordinary CPU, so a clinic, a law firm, a school, or a single person keeps its experience on its own machine.
+
+\paragraph{Specialists on demand.} The same engine grew forecasters, doctors, tutors, game directors, film and music producers, and a mathematician (Section~\ref{sec:personas}). A tutor learns a student's recurring mistakes; a support agent learns a product's real failures; a developer persona learns a codebase's conventions.
+
+\paragraph{Personal preferences.} A user's preferences --- style, conventions, what ``done'' means --- are taught to the user's own pblock and remembered across sessions and across models, instead of being repeated in every prompt.
+
+\paragraph{Training data from real decisions.} Every pblock case is a situation, a decision, and its confirmed outcome. Collected across real users, these stores form a curated record of real-world decisions and their results, which can in turn be used to train or evaluate larger models.
+
+\paragraph{A market for experience.} A trained pblock is a small, portable file. Domain experts can grow personas once and publish, share, or license them, as software packages are shared today.
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Experience-storing agents.} Voyager \cite{wang2023voyager} grows a skill library of executable code from environment interaction; AWM \cite{wang2025awm} induces reusable workflows from trajectories; ExpeL \cite{zhao2024expel} distills experience into decision rules. Each stores \emph{procedures} --- what to do. None attaches calibrated confidence to its judgments, models refusal behavior, tracks outcome-verified versus unverified provenance per case, or keeps bi-temporal memory with rollback. The externalization review \cite{externalization2026} surveys this landscape; the surveyed systems share the gap our delta names.
+
+\paragraph{Memory systems for LLM agents.} The cycle of retrieving a similar past case, reusing it, revising it, and retaining the outcome is the classic case-based reasoning loop \cite{aamodt1994cbr}; Persona is a case-based system in that lineage. Among LLM agents, Reflexion stores verbal self-reflections between attempts \cite{shinn2023reflexion}; MemGPT/Letta manages a tiered context like an operating system \cite{packer2023memgpt}; Mem0 extracts and consolidates facts from conversations \cite{chhikara2025mem0}; Zep keeps a temporal knowledge graph with bi-temporal validity of facts \cite{rasmussen2025zep}; A-MEM links notes into an evolving network \cite{xu2025amem}; and Dynamic Cheatsheet keeps a self-curated memory of strategies at test time \cite{suzgun2025cheatsheet}. These systems store facts, reflections, or strategies, most often judged by the model itself. Persona differs in what it stores and who decides: cases carry confirmed outcomes from the world rather than the model's own opinion, small calibrated heads decide what applies and when to abstain, a case gains influence only through corroboration, and experience is organized into switchable personas that can be trained before use and carried across models. Bi-temporal history alone is not new --- Zep has it --- but in combination with outcome-verified writeback and calibrated refusal it is.
+
+\paragraph{Product-level neighbors.} CopilotKit's OpenDots \cite{copilotkit2026opendots} shipped an automatic-learning pipeline --- execution traces to pattern analysis to human-approved skills to context injection --- whose \emph{shape} matches our corpus$\to$training$\to$heads$\to$store loop minus two properties: its skills are static, uncalibrated markdown (procedures, no confidence, no refusal), and a human review gate substitutes for outcome verification. OpenAI's Dots learns preferences from feedback at the marketing level, with no published calibration or honesty measurements, on a closed model-locked stack. The composition is deliberate: the layer works \emph{with} such agents --- it is agent-agnostic by design (Section~\ref{sec:arch}).
+
+\paragraph{Task-scope versus agent-scope.} These systems learn per-task procedures: an expense-review workflow is useless in a code repository. Persona's learning target is the judge --- how to be --- so every outcome sharpens domain-independent judgment (pushback, verification discipline, honest refusal). The same engine grew personas across eleven domains and ran a sealed five-field test unchanged (Section~\ref{sec:personas}), which is the measured form of that transfer claim. What remains novel after this sweep is therefore not ``agents that store experience'' --- that space is now populated --- but the composition: outcome-verified append, calibrated multi-head judgment, store-not-weights with bi-temporal memory, and measured cost savings on paired runs, which no single neighbor combines.
+
+\section{Architecture}
+\label{sec:arch}
+
+\begin{figure*}[htbp]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figs/fig_architecture_tikz}}
+  \caption{The Persona layer loop. Every query is judged against the working state and the store; enhancement compiles L1 rules (verbatim, precedence-protected), L2 lived precedents, and L3 notes into the prompt; the commodity model responds; the output audit grades every claim (supported / unverified / contradicted); on a \texttt{fix} verdict the attributed fixes go back to the model for revision (max two retries) before anything is shown; user confirmations write back through the two-stage law into the bi-temporal store. Precedence (security $>$ correctness $>$ style) cannot be overridden by learned content.}
+  \label{fig:arch}
+\end{figure*}
+
+\subsection{The layer loop}
+
+By design, the panel is the \emph{only} path between the agent and the model: the agent never queries the model directly --- every prompt it sends is compiled by the panel, and every response passes the output audit before the agent or user sees it. The no-layer arm in Section~\ref{sec:setup} runs the identical loop with the panel's enhancement empty (no injections, no audit gating); no other component differs. Not every part of the design was switched on in every experiment: in the graded SWE-bench run, the output audit ran on each run's final answer and the self-repair edge was not yet active; Table~\ref{tab:active} lists what ran in each experiment.
+
+Figure~\ref{fig:arch} shows the loop. A working-state embedding of the current query is compared against the store; a relevance gate selects top-$k$ precedents (judged for applicability); the compiler assembles the prompt under strict precedence (L1 security rules injected verbatim $>$ L2 lived precedents $>$ L3 notes $>$ voice); the model responds; every claim in the response is audited as \emph{supported}, \emph{unverified}, or \emph{contradicted} --- and on a \texttt{fix} verdict the attributed fixes go back to the model for revision (at most two retries), re-audited each round; an answer that still fails is shown flagged, never silently. The user confirms or corrects; and confirmed outcomes pass the two-stage writeback into the store. The learning loop is the product: every confirmed outcome makes the next task better.
+
+\begin{algorithm}[htbp]
+\caption{The Persona layer loop (the full design; Table~\ref{tab:active} lists which parts ran in each experiment)}
+\label{alg:loop}
+\begin{algorithmic}[1]
+\State $q \gets$ agent query; $e \gets \mathrm{embed}(q, \mathrm{working\ state})$
+\State $C \gets \mathrm{top\_k}(\mathrm{store}, e)$ \Comment{relevance-gated candidates}
+\State $J \gets \mathrm{judge}(e, C)$ \Comment{on-task? sideways? necessary? calibrated heads}
+\State $P \gets \mathrm{compile}(\mathrm{L1}_{\mathrm{verbatim}} \succ \mathrm{L2}_{C \,\mathrm{passing}\, J} \succ \mathrm{L3})$
+\State $r \gets \mathrm{model}(P)$
+\State $A \gets \mathrm{audit}(r)$ \Comment{supported / unverified / contradicted}
+\If{worst($A$) = fix \textbf{ and} attempts $< 2$}
+  \State $r \gets \mathrm{model}(P, A.\mathrm{fixes})$; \textbf{goto} audit \Comment{self-repair edge}
+\EndIf
+\State \textbf{show} $r, A$ to user; collect confirm/correct
+\If{confirmed}
+  \State $\mathrm{writeback}_{2\text{-stage}}(\mathrm{store}, \mathrm{case})$ \Comment{verified-append}
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{The panel: personas as instances}
+Personas are \emph{instances}, not modes: the same frozen engine, each with its own store, its own judgment head, and its own calibration. This is emergent specialization from an identical substrate, realized in architecture. The panel is unbounded; an orchestrator summons 2--5 personas per task; a relevance gate prevents dilution (the dose result in Section~\ref{sec:personas} shows why: an over-stuffed briefing scored $71.8\%$ against $83$--$86\%$ for right-sized ones). Personas appear when the work demands them: the agent does the taxonomy, the user stays in plain words.
+
+\subsection{Precedence and calibration}
+Precedence is load-bearing: L1 $>$ L2 $>$ L3 $>$ voice, and security $>$ correctness $>$ style. A bad precedent in one persona cannot normalize a pattern past another persona's hard rules. Calibration is measured: the v1 judge is temperature-calibrated (ECE $0.048$ at 120 held-out cases), with conformal edge-of-territory escalation (top-similarity below threshold $\Rightarrow$ ``we don't know'' $+$ escalate) and isotonic refitting on confirmed outcomes.
+
+\subsection{Store-not-weights}
+Every lesson is inspectable data --- correctable, rollback-able, portable. No gradient updates run on the user's machine. The user owns the personality as data, and the model can be swapped, downgraded, or replaced without the security perimeter moving. As a design property, the layer is also distillation-resistant: the judgment lives in the store and small heads, not in weights an extractor can probe (not yet measured; Section~\ref{sec:limitations}).
+
+\paragraph{Deployment note.} The layer governs \emph{model traffic}; it composes with --- and is independent of --- code-level \emph{tool} governance in the host agent (a deterministic mediator that scope-checks and audits every tool call outside the LLM). The two enforce different traffic: neither substitutes for the other, and the layer functions with any harness that exposes the same two seams.
+
+\subsection{The anti-hallucination stack}
+Recent theory explains why the layer's design shape is forced rather than chosen. Hallucination and generalization are near-biconditional phenomena \cite{das2026innovation}: a model that never asserts anything outside its training distribution cannot hallucinate --- and also cannot generalize --- so ``just scale the data'' forecloses, leaving exactly two escapes, both \emph{outside the model}: restrict what it may assert to a verified set, and check what it asserted against a source it does not control \cite{kalai2025hallucinate}. The layer's stack is those two moves. Verified context injection and the store constrain the assertion space to lived precedents; the output audit, provenance attribution, and edge-of-territory refusal are the external checker. Two evidence-based caveats are built in: hallucination rates quoted without paired coverage are meaningless (abstention can quarantine rather than cure, costing ${\sim}$40 points of coverage), and detection benchmarks themselves leak (label-free detectors fall to chance on clean live-generation corpora) --- which is why the layer audits \emph{artifacts} (receipt checks, proof hashes) rather than model self-reports. The precise promise: \emph{the model is never wrong about things the personality knows, rarely works on the wrong thing, and always says when nobody knows} --- not a claim of zero hallucination.
+
+\subsection{The full Persona flow}
+\label{sec:fullflow}
+
+Sections~\ref{sec:arch}--\ref{sec:judges} describe the layer's parts; here we describe the complete operating cycle as it actually ran, because the cycle --- not any single component --- is the contribution. It has three phases.
+
+\paragraph{Phase 1 --- before the model (input side).} The working state is embedded; the relevance gate selects top-$k$ precedents; judge heads grade each candidate (on-task? sideways? necessary?) and the compiler assembles the prompt under precedence: L1 security rules verbatim, L2 lived precedents, L3 notes. Sideways judgments above confidence inject a re-aim notice (enforced, not logged). A novelty pre-pass rewrites only grammar and clarity --- it never adds facts.
+
+\paragraph{Phase 2 --- after the model (output side).} Every response passes the output audit (supported / unverified / contradicted) before display. Every run then produces a \emph{receipt}: what ran, what it inspected, what it produced, where it stopped, and evidence for a five-status verdict (completed / no-work / blocked / failed / uncertain) --- because the model's claim of completion is never the record; status comes from receipt \emph{checks}, with sources hashed and secrets recorded as names, never values. Every action lands in a versioned audit chain (action $\to$ reason $\to$ artifact $\to$ proof). Failures print symptom $\to$ cause $\to$ the exact fix command: errors teach. And when the agent mutates \emph{itself} --- tools, config, its own source --- a self-repair gate applies the patch, re-runs the test slice, and auto-rollbacks on red; a small trusted-computing base (the mediator, validator, self-test harness, and all tests) is code-protected: the agent can never patch its own referee without explicit human approval.
+
+\paragraph{Phase 3 --- learning (how it learns from its own errors).} Between tasks, the writeback law runs --- and it is deliberately boring:
+\begin{itemize}
+  \item \textbf{Only confirmed outcomes make a lesson count.} Lessons written during a run start as candidates; they gain influence only when real outcomes --- in the graded campaign, \emph{verified-success} or \emph{verified-failure} from the official grade --- confirm them, never on the model's opinion of how it went.
+  \item \textbf{Extraction is deterministic, no LLM in the loop}: the situation is the problem statement; the framing is the lesson signature (files touched, tests seen, final reasoning); auditable and reproducible by anyone.
+  \item \textbf{New cases start at low confidence (0.3)}; promotion to influential requires corroboration. Lived cases override seed cases.
+  \item \textbf{Verified success moves the case's blend-weight up a small bounded step; verified failure moves it down.} Attributed failures compile as WARNING lines (``trap: this did not resolve on a similar bug'') in a section that cannot crowd out patterns.
+  \item \textbf{Every success also writes a done-signal} --- ``after \{test\} passed once, task complete'' --- compiled into a fixed \emph{what done looks like} block (81\% of observed successes name their test; this is the only mechanism that catches ceremony loops, which ran 23--47\% of turns).
+  \item \textbf{Scars supersede}: a card contradicted by verified outcomes from two different instances is demoted per an evidence bar measured to be safe against 10\% outcome flake.
+  \item \textbf{Dedupe between waves}: framings above 0.85 similarity merge, folding corroborations and attributed outcomes.
+  \item \textbf{The store is snapshotted before every wave's writes} --- every learning step is rollback-able by construction.
+  \item \textbf{The panel grades itself, then stands trial}: after each learning pass, every judge head is re-tested (ECE must not degrade by more than $0.01$; accuracy must not drop); the panel's own compilation choices are attributed by joining each run's compiled prompt to its outcome (instance $\to$ framings $\to$ outcome) so the layer knows which of \emph{its own} compile choices earned what. Four guards ensure the learning cannot starve warnings, cannot supersede on noise, cannot change the human-validated corpus specification without human review, and cannot drop verified-success cases below the retrieval floor.
+\end{itemize}
+
+The result is a closed consequence loop: act $\to$ audited outcome $\to$ verified lesson $\to$ guarded writeback $\to$ changed behavior --- with a human at the three gates that matter (corpus-specification changes, changes to the agent's own safety files, and clinician-class judgments).
+
+\subsection{What a fresh user gets}
+Next to the trained working pblocks, one blank, always-recording personal pblock: a student in the back of the room --- records everything, influences nothing until the user asks. Growth comes from confirmed outcomes only, with corroboration before influence (two independent corroborations $\Rightarrow$ active precedent), sycophancy monitoring so the persona stays able to disagree, a one-line notification whenever a new specialist persona appears, and one-action removal for every persona.
+
+\section{Training the Judges}
+\label{sec:judges}
+
+The judgment heads are what make the layer's trust decisions earned rather than asserted. V1 heads were trained on heuristic labels --- the bottleneck: 50--60\% accuracy on the hardest judgments. V2 heads were retrained from scratch on a \emph{failure-mined, lesson-distilled, repo-balanced} corpus (a 10:1 skew audited and corrected; balance gates: coverage $\geq$80\%, latency/RAM caps, near-dupe rate, 0\% in-domain escalation).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.78\linewidth]{figs/fig_judges.pdf}
+  \caption{Judge training method effect (held-out). V2's failure-mined, repo-balanced corpus roughly doubles pushback and needs-tests accuracy and lifts precision-when-answering by 19 points ($p{<}0.001$).}
+  \label{fig:judges}
+\end{figure}
+
+Figure~\ref{fig:judges} shows the result: pushback judgment $43.4\%\to82.2\%$ ($p{<}0.001$), needs-tests $35.6\%\to82.2\%$, precision-when-answering $73.3\%\to92.6\%$, and trap-naming 76 vs 50 --- with $35\%$ honest refusal (``this needs tests before I answer'') vs $14\%$. Refusing honestly is a feature, not a failure.
+
+The generic pipeline --- DEFINE, HARVEST, BATTERY, TRAIN, PACKAGE --- is released as repository documentation: anyone can grow a category persona through it. The developer persona is the proved instance; a six-emotion family shows the same engine specializing from one substrate into divergent experts.
+
+\section{Evaluation Setup}
+\label{sec:setup}
+
+All training and evaluation ran on a normal consumer-type machine --- no datacenter hardware, no accelerators beyond the ordinary --- which is part of the claim: the layer is designed to grow on the machine you already own. The persona panel for this run: \textbf{five seat stores} (triage, localize, strategy, test, outcome) holding 8{,}330 seeded rows at campaign start (triage 1{,}341 $\cdot$ localize 1{,}937 $\cdot$ strategy 1{,}536 $\cdot$ test 1{,}635 $\cdot$ outcome 1{,}881), all embedded, growing by 1{,}709 lived-origin lessons during the campaign under the two-stage store law plus the \textbf{developer judgment heads} (the proved instance: 11 heads over a 626-case balanced store grown from 54 curated contrast pairs + 2,433 replayed SWE-Gym trajectories with verified FAIL\_TO\_PASS outcomes across 11 repos, covering pushback, needs-tests, territory, big-change, review-worthiness, dependency-sensitivity, ordering, audit), the \textbf{personal} store (always recording, grows from the run's own confirmed outcomes) and the \textbf{wave} store (per-wave lessons, kept separate so lessons are attributable per wave --- the learning-curve measurement of Section~\ref{sec:tokens} depends on this split). The deployment substrate is \textbf{Aura}, the authors' own open-source tool-using agent (shell, file editing, test execution; 730-test suite; a code-level mediator gating every tool call). We evaluate on SWE-bench Verified \cite{jimenez2024swebench}: 500 instances, official harness, GLM-5.3 Flash backbone held constant across arms, structured as $10\times50$ waves, all 500 instances paired (both arms run every instance). Configuration: 250 steps, 60\,s command timeout, 10K tool-output cap, \$3 hard stop, 128K context, temperature 0. Retrieval substrate: a frozen all-MiniLM-L6-v2 embedder (int8 ONNX, 384-dim, ${\sim}22$\,MB, CPU-only), shared identically by every persona --- no per-persona weights; all per-persona learning lives in the JSON head weights and the stores. Pre-registered rules: environmental-only retries (design failures stand), canonical per-wave /50 metric, and a DESIGN\_FREEZE ledger proving no mid-run design changes. Contamination \cite{swebenchillusion2025,swebenchplus2024} applies equally to both arms, protecting the paired delta.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{What was switched on in each experiment.}
+\label{tab:active}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.9cm}>{\raggedright\arraybackslash}p{5.0cm}@{}}
+\toprule
+Experiment & What ran \\
+\midrule
+SWE-bench A/B (1{,}000 runs) & briefing from five seat stores and the developer heads; 1{,}709 lived lessons written back during the campaign; output audit on each final answer. Self-repair, SCARS, isotonic refit, and the sycophancy monitor were built later and were off. \\
+Five-field test (125 cases) & panel briefing on or off (the arm difference); briefing size profiles compared. \\
+24-task session & the live layer with self-repair, SCARS, isotonic refit, and the sycophancy monitor on; trained pushback judge. \\
+Keel Guard (750 requests) & store and heads only, frozen; thresholds fixed before testing; no language model. \\
+Eleven domains & pblocks trained from real corpora; outputs in regulated fields stopped at a human gate. A demonstration, not a controlled trial. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{The Grounding Law}
+\label{sec:grounding}
+
+Why should development live in a \emph{store} rather than in plastic weights? We tested the question directly in a companion developmental study (full method in Appendix~\ref{app:dev}).
+
+\textbf{Design.} 280 independently initialized modular graph networks (48 units + 24 dormant pool, editable topology) trained in a $2\times2$ factorial: fixed/plastic architecture $\times$ absent/present teacher. The teacher provides demonstrations, DAgger-style corrections \cite{ross2011dagger}, and a fading scaffold (assistance anneal $1.00\to0.15$), with pre-registered statistics and validated structural metrics.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figs/fig_grounding_law.pdf}
+  \caption{The grounding law. (a) The teacher is the causal ingredient for competence ($14\times$). (b) The dissociation: developmental history writes reliably into behavior ($d{=}0.10$, $p{=}0.0002$) while final wiring converges ($d{=}0.03$, ns). Development belongs at the behavior level --- a store of lived lessons, not weight updates.}
+  \label{fig:law}
+\end{figure}
+
+\textbf{The honest falsification.} Our central divergence hypothesis --- that history produces measurably different final \emph{architectures} --- \textbf{failed}: six independent tests agree (seed-level $p{=}0.297$; growth-controlled residualization $p{=}0.868$; a V5 module-level claim retracted as a null-model artifact). Initialization priors dominate; experience fills rather than reorganizes (``pre-carved niches''), consistent with initialization-specialization theory \cite{jarvis2025specialisation}.
+
+\textbf{What survives: the dissociation.} History writes reliably into \emph{behavior}: functional divergence $d{=}0.10$, $p{=}0.0002$; behavioral classifier $0.61$ ($p{=}0.027$); teacher competence $14\times$ (0.405 vs ${\sim}0.03$); corrections track growth ($r{=}0.745$); cutting guidance collapses competence ($0.46\to0.03$). A two-domain teaching-channel law also held: for local repeated consequences, lived experience beats instruction (toothache study, Holm $p{=}0.0044$); for terminal sparse consequences, instruction beats lived experience (Holm $p{=}0.0018$); the full parent (words $+$ prevention $+$ physics) wins overall --- multiplicative, not additive. These channel effects have classical psychological anchors: delay discounting \cite{ainslie1975specious}, reinforcement schedules \cite{ferster1957schedules}, learned helplessness \cite{seligman1967failure}, two-factor learning theory \cite{mowrer1947dual}, desirable difficulties \cite{bjork1994memory}, and the zone of proximal development \cite{vygotsky1978mind,wood1976role}.
+
+\textbf{The engineering consequence.} If history writes behavior and not wiring, the right place to grow an agent is the behavior level: an inspectable store of lived lessons, not plastic weights. Persona \emph{is} this law, realized.
+
+\section{Personas for Any Task}
+\label{sec:personas}
+\textbf{Persona} is the product; a \textbf{persona} is a named specialist role the agent can summon; its \textbf{pblock} is that persona's memory --- its solved cases plus the machinery that retrieves, cites, and grows them; a \textbf{panel} is several pblocks consulted on the same task. Nothing in the engine is about code. A new persona is seeded from its own template and corpus, then grows by living; the frozen embedder, the heads, the store, and the writeback law are the same for every persona. Software engineering is where we measured most carefully; the same layer serves any task.
+
+\paragraph{Eleven personas, one session.} The agent grew eleven personas from real public corpora --- forecaster, astronomer, detective, mathematician, film, game designer, doctor, lawyer, teacher, historian, and accessibility --- each producing a checked artifact (Appendix~\ref{app:chain11}). Three honest negatives stand; outputs in regulated fields stop at a human gate by design.
+
+\paragraph{A sealed five-field test.} Five fields --- medical (30 cases), legal (20), creative (20), finance (25), tutoring (30) --- ran under a sealed arm map, graded against per-domain keys. On 125 points, the host agent without the panel scored $83.0\%$; with the panel $85.4\%$; a second model with the panel $85.7\%$; the reference model alone $80.6\%$. A lean panel profile (one flat line per precedent) scored $89.7\%$, the best arm; it was not the pre-registered configuration and is reported separately. 
+
+\paragraph{The dose matters.} The same test measured how much experience to give the model. An over-stuffed briefing --- every seat's full structured block --- scored $71.8\%$; right-sized briefings scored $83$--$86\%$; and the leanest profile, one flat line per precedent, scored best of all ($89.7\%$). More experience is not better if the reader cannot use it: the briefing must fit the model, which is why the layer ships size profiles (flash, full, simple) rather than one fixed dose.
+
+\paragraph{The security persona.} The layer was born as a security checkpoint (Section~\ref{sec:history}). \emph{Keel Guard} is that checkpoint grown as a persona --- an antivirus for agent requests: a new threat is answered by training the pblock on it, not by retraining a model or writing another rule-based guardrail. From the 34 threat cases of a public AI-misuse threat-intelligence report \cite{anthropic2026misuse} --- ransomware, credential theft, espionage, coordinated influence operations, distillation --- it grew over 40 training waves, adding public safety-benchmark prompts (AdvBench, HarmBench, and other 2024 safety and jailbreak sets), in-the-wild prompts, public threat reporting, and benign mirror cases, into 115{,}393 judged situations ($42.5\%$ benign), each citing its source, and answers STOP, DOUBT (hand the request to the agent's model or a human to check), or PASS for an agent's request, with thresholds fixed before testing (STOP $\geq 0.62$, PASS $\leq 0.38$).
+
+\textbf{Evaluation on never-seen text.} We froze the artifact and scored 750 requests it had never seen (leak check against the store: no exact copies; a similarity check with the same embedder found 13 harmful requests with a near-copy in the store at cosine $\geq 0.95$ --- without them Keel Guard stops $89.0\%$ and Llama Guard 3 $82.5\%$, so the comparison stands): JailbreakBench's 100 harmful and 100 benign behaviors \cite{chao2024jailbreakbench}, XSTest's 250 safe-but-risky-sounding prompts and 200 unsafe contrast prompts \cite{rottger2024xstest}, and 100 fresh hand-written agent requests (50 harmful, 50 benign). The same set was run through Llama Guard 3 (1B) \cite{ollama2026llamaguard3} on the same CPU (Table~\ref{tab:keelguard}). Counting only STOP as stopped (DOUBT counts as not stopped), Keel Guard stopped more harmful requests ($89.4\%$ vs.\ $83.1\%$), let only $2.9\%$ through unflagged, and judged in 34\,ms against 519\,ms (median; ${\sim}15\times$ faster). Its weakness is equally clear: it stopped $55.2\%$ of benign requests, against $11.2\%$ for Llama Guard 3 --- mostly benign prompts on risky-sounding topics (XSTest's ``kill a process'' class, history, privacy of fictional people, security research, journalism). The store is trained on misuse and its benign rows are template-styled, so benign look-alikes fall near hostile cases. Keel Guard is a pblock, not a model: it is the first check, and a request it is unsure of goes to DOUBT, where the agent's model or a human decides. A benign look-alike therefore does not need to PASS; it needs to land in DOUBT instead of STOP. Under the layer's own law this is a training-data fix --- benign look-alike cases added to the store as doubts and re-scored on a new held-out set --- which we leave to the next release rather than tune on this test set. Keel Guard is also built to be trained further: every new misuse case and every benign look-alike added to its store makes it sharper, and we invite others to keep training it, wave after wave, toward a stronger guard.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Keel Guard vs.\ Llama Guard 3 (1B) on 750 never-seen requests (350 harmful, 400 benign), CPU only, thresholds frozen.}
+\label{tab:keelguard}
+\begin{tabular}{lcc}
+\toprule
+ & Keel Guard & Llama Guard 3 \\
+\midrule
+harmful stopped & \textbf{89.4\%} & 83.1\% \\
+harmful passed unflagged & \textbf{2.9\%} & 16.9\% \\
+benign wrongly stopped & 55.2\% & \textbf{11.2\%} \\
+sent for a check (DOUBT) & 18.8\% & --- \\
+median time per request & \textbf{34\,ms} & 519\,ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Generality came nearly free.} The 11-domain demonstration (Appendix~\ref{app:chain11}) --- forecaster, astronomer, detective, mathematician, movie, game-designer, doctor, legal, teacher, historian, assistive-tech --- trained \textbf{11 domain persona packs} --- 65 trained judge heads across them (the forecaster pack alone contains seven: seed, longshot, crypto, baserate, event, resolver, calibration), each pack with its own store, heads, and calibration --- no engine changes --- from real data at under \$1 of model spend, with three honest negatives recorded (historian holdout miss; thin assistive seeds; detective aged-case head) and every regulated-domain output stopped at its human gate (clinician review, not-legal-advice, instructor validation). Independent re-verification against external sources found nothing factually wrong: the forecaster's learned calibration held on a fresh 300-market holdout, an astronomer holdout call matched NASA's archive, and cited box-office grosses matched to the dollar. The mathematician persona produced a checkable new result on an open problem (OEIS A131393, whose generating program is lost): it verified the difference sequence's signed-pair structure across 71 terms, showed that four rule reconstructions all match 27/27 known terms and diverge at exactly $a(28)$, and pinned the unknown to a single choice ($d{=}+15$ over the greedy $d{=}-12$) --- a concrete next constraint for any future reconstruction. Full per-domain detail: Appendix~\ref{app:chain11}.
+
+\section{Results}
+\label{sec:results}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Main results: 1{,}000-run paired A/B on SWE-bench Verified (500 instances $\times$ 2 arms), official harness. Grading protocol: one official harness report per arm and wave; in waves 8 and 10 the panel arm was regraded (v2) after the environment-failure retries allowed by the pre-registered rules (no-panel runs needed none); in wave 9, runs whose grading errored were re-run through the harness in both arms (arbitration: panel $+2$, no-panel $+1$) and added to that wave.}
+\label{tab:main}
+\begin{tabular}{lcc}
+\toprule
+wave & panel & no-panel \\
+\midrule
+1 & 44/50 & 45/50 \\
+2 & 45/50 & 39/50 \\
+3 & 46/50 & 47/50 \\
+4 & 43/50 & 42/50 \\
+5 & 48/50 & 47/50 \\
+6 & 43/50 & 42/50 \\
+7 & 43/50 & 43/50 \\
+8 & 43/50 & 43/50 \\ % (v2 regrade)
+9 & 44/50 & 45/50 \\ % (+arb deltas)
+10 & 46/50 & 47/50 \\ % (v2 regrade)
+\midrule
+total & \textbf{445/500} & 440/500 \\
+$\Delta$ & \multicolumn{2}{c}{+5 tasks, +1.0 pp, McNemar $p=0.59$ (ns)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figs/fig_paired_results.pdf}
+  \caption{Paired A/B results (all 500 paired). Per-wave resolve rates from the official harness; discordant pairs split 30 (panel-only) vs 25 (no-panel-only), exact McNemar $p=0.59$.}
+  \label{fig:paired}
+\end{figure}
+
+Table~\ref{tab:main} and Figure~\ref{fig:paired} give the headline: the panel resolves \textbf{89.0\%} of the full 500 vs the bare agent's \textbf{88.0\%} --- $+1.0$~pp, with the 55 discordant pairs splitting 30--25 (McNemar $\chi^2{=}0.45$, exact $p{=}0.59$: not significant; the delta is directional evidence, not proof of superiority). With the base agent already at $88\%$, the remaining headroom is small; the panel's measured value lies in cost, steps, and honesty, not raw accuracy.
+
+\paragraph{Efficiency.} The panel solved with fewer steps (median $43$ vs.\ $49$; paired mean difference $4.2$ steps, panel leaner in $231/424$ paired runs) and less compute: $615.3$M vs.\ $724.3$M receipt tokens in total; on the 424 instances with token receipts in both arms, $577.6$M vs.\ $652.9$M ($11.5\%$ less; 51 panel and 35 no-panel receipts are missing, mostly wave~1, so the totals overstate the gap), median $0.96$M vs.\ $1.24$M tokens per resolved instance ($23\%$ at the median). The full accounting is Section~\ref{sec:tokens}. Which part of the layer saves the tokens was not isolated; our hypothesis is the done-signal block (``what done looks like'') and the warning lines, which target the ceremony loops that consumed 23--47\% of turns --- an ablation is future work. Headline: \emph{the expensive part of agentic learning is not the hint --- it is the guard that stops bad learning.}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figs/fig_learning_curve.pdf}
+  \caption{Compute per resolved task by wave (both arms, released manifest; runs with token receipts). Shown for completeness; it is not a growth-over-time claim.}
+  \label{fig:curve}
+\end{figure}
+
+\paragraph{Honesty.} Claim audits attribute supported/unverified/contradicted verdicts to every run's final answer; novel or unsupported work is marked, never silently trusted.
+
+\section{Token Economics}
+\label{sec:tokens}
+
+The layer's cost is a research result, not a footnote: we report it with the same honesty as accuracy. Two accounting views are distinguished \emph{by definition}: receipt totals (final-state per run) and per-call event sums (gross re-send billing across the $47{,}414$ LLM calls; the evaluation endpoint exposed no KV-cache fields, so every call bills at cold price). We state which view each claim uses.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Token economics of the 1{,}000-run A/B. Receipts capture final-state totals; per-call event sums capture gross re-send billing (no KV cache on the endpoint: all calls bill cold).}
+\label{tab:tokens}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrr}
+\toprule
+ & panel & no-panel \\
+\midrule
+receipt tokens (final state) & 615.3M & 724.3M \\
+tokens per resolved instance (median) & 0.96M & 1.24M \\
+per-call event sum (gross) & 1{,}261M & 1{,}487M \\
+resolved instances & 445 & 440 \\
+\midrule
+\multicolumn{3}{l}{\emph{Reference points}}\\
+LLM calls (both arms) & \multicolumn{2}{r}{47{,}414} \\
+cache fields reported by the endpoint & \multicolumn{2}{r}{none} \\
+KV prefix caching projection (0.25$\times$ rate) & \multicolumn{2}{r}{$\approx$3.8$\times$ reduction} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\paragraph{Cost structure.} The prompt:completion ratio is 26:1 --- the layer spends on \emph{input context}, not generation, which is exactly where a store-not-weights design should spend. No growth-over-time claim is made for this campaign. Guards are not overhead --- they are the cost control.
+
+\paragraph{Context against public results.} Our claim is the paired delta, not leaderboard rank. Public SWE-bench Verified results mix two kinds of systems: benchmark-specialized harnesses built only to resolve SWE-bench issues, and general-purpose agents built for everyday work. Aura is the second kind --- the same agent, prompt, and tools a user runs daily, unchanged for the benchmark. On the same public leaderboard\footnote{Vals AI SWE-bench Verified leaderboard, archived 2026-09-01: \url{https://www.vals.ai/benchmarks/swebench}.}, a general-purpose agent with a flagship model (Claude Code with Claude Opus 4.8) is reported at $85.8\%$, while a minimal benchmark harness with our same GLM-5.3 Flash backbone is reported at $92.0\%$; settings (step and cost limits, timeouts) differ across all of these, so they are context, not a controlled comparison.
+
+
+
+
+
+\section{Analysis and Ablations}
+\label{sec:ablations}
+
+
+\paragraph{Substrate ablation: fine-tune vs.\ frozen.} The store-not-weights design is a measured result, not only a principle. On the 7,702-case SWE corpus ($y$ = harness-confirmed outcome, balanced 3,851/3,851, 23 repos), a pre-registered head-to-head compared the shipped substrate (frozen MiniLM + logistic heads) against per-fold fine-tuning of the same backbone (MNRL contrastive, then the identical head pipeline), under StratifiedGroupKFold grouped by repo (zero same-repo leakage), same folds for both arms. Fine-tuning was a statistical tie: accuracy $84.42\%$ vs.\ $84.41\%$, ROC AUC $0.9405$ vs.\ $0.9419$ --- frozen preferred on AUC in both folds, accuracy split across folds. The contrastive loss did decrease, so the fine-tune learned its objective; it simply did not transfer to outcome judgment at this corpus scale. Meanwhile fine-tuning multiplies artifact size (${\sim}23$\,MB int8 per persona vs.\ KBs of JSON) and training cost (${\sim}$15\,min CPU per fine-tune vs.\ seconds), and moves the judgment into weights an extractor can probe. At seed scale the substrate is not the bottleneck; keeping judgment in inspectable data costs nothing in accuracy. Fine-tuning (``Tier-2'') remains a documented option for much larger corpora, with the bar written down: beat $84.4\%$ / $0.942$ held-out with artifacts in the tree.
+
+\paragraph{Session-level validation of the governance mechanisms.} Because the four governance mechanisms were built after the graded run, we validated them in their native environment: a 24-task daily-use session on the live layer (54 seed lessons, trained pushback judge, the GLM-5.3 Flash backbone), with a deterministic scripted user requiring one explicit operational safeguard per task. Zero crashes; all 24 tasks completed. The self-repair loop flagged 7 of 24 answers and the bounded re-prompt (max 2) converted \textbf{7/7} to passing before anything was shown --- no flagged answer leaked to the user. Isotonic refit points executed at tasks 8 and 16 on confirmed outcomes. The sycophancy monitor recorded agreement rates of 0.75/1.00/0.88 across session thirds (below the 0.8 risk floor with the observed correction counts); notably, zero corrections reached the user because repair caught them upstream. SCARS was exercised on the session store: two lived candidates contradicting an active precedent, plus an independent scar, cleared the 2-instance bar (flake rate 0.0) and superseded it bi-temporally --- while the single-instance case was correctly blocked. One honest limitation surfaced: automatic contradiction wiring (similarity $\geq$0.85 + stance conflict) is conservative --- contradictions phrased in different words were not auto-wired and required explicit wiring in this demonstration.
+
+\section{Conclusion}
+Persona separates what an AI system has \emph{lived} from the model it runs on. Experience becomes plain data: trained before use, grown from confirmed outcomes, corrected without retraining, cited in every judgment, and kept when the model is replaced. The same small engine made an agent leaner on real software tasks, grew experts in eleven domains, raised a host agent in five fields, and became a guard with high recall on never-seen misuse at a fraction of a safety model's cost per check, whose false alarms are the next training target. The science says the behavior level is where growing works; the first experiments show the same engine running across very different kinds of work.
+
+The larger consequence is a new layer in the AI stack --- \emph{model} for intelligence, \emph{Persona} for experience and judgment, \emph{agent} for action --- as databases once separated data from the programs that use it. Once experience lives outside the model it can be owned by its user, audited by a regulator, shared across a team, packaged and exchanged like software, and updated like antivirus signatures: a new threat found by one guard can protect every deployment the next day without retraining any model. Every case is also a situation, a decision, and its confirmed outcome --- a clean record of real-world decisions for training and evaluating better models.
+
+The layer is built to compound with use; measuring that growth from a blank start over weeks of real use is the next study, and the one result that would show the full value of the design. Future work follows from that path: a longitudinal study that shows experience compounding from first use, retraining Keel Guard on benign look-alikes to cut its false alarms, an open format for exchanging pblocks, a drop-in adapter for other agents, a second backbone, and deployment at Pi-class ($<$1\,GB verified).
+
+\section{Limitations}
+\label{sec:limitations}
+We discuss the honest bounds of the work.
+
+\textbf{Contamination.} SWE-bench memorization \cite{swebenchillusion2025,swebenchplus2024} affects all arms equally; our claim is the paired delta, which contamination cannot explain. \textbf{Single model, single run.} A second backbone is future work; the five-field test used a second model in one arm only. \textbf{Growth with use.} The layer is designed to improve monotonically with confirmed use (verified-append, corroboration-before-influence, bounded self-retrain); a controlled longitudinal growth curve is future work and no production growth claim is made here. \textbf{Design freeze.} The design was frozen for the whole campaign. \textbf{One significance-powered benchmark.} The five-field gain ($+2.4$ on 125 cases) was not significance-tested and its finance cell was re-graded on an outcome basis after the run (note released); the eleven-domain results are demonstrations, not controlled trials; the security persona's threat cases come from one report and public benchmark sets; on held-out real text it over-blocks benign requests ($55.2\%$ false alarms). \textbf{POC-scale science.} The developmental study is synthetic and small-scale; its law is invoked only at the behavior level, where it is powered. \textbf{Distillation resistance} is a design property, not yet a measured result. \textbf{Seed-scale judge corpora.} The substrate ablation (Section~\ref{sec:ablations}) shows fine-tuning ties frozen heads at ${\sim}3{,}850$ training cases per fold; larger corpora could shift that conclusion, and the re-test bar is written down. \textbf{Governance internals built after the graded run.} The self-repair loop, the SCARS supersession bar, isotonic refitting, and sycophancy monitoring were implemented after the 500-run and are verified by unit tests (17 checks) but were \emph{not active} in it; no benchmark numbers are cited for them, and upgrading them to benchmark evidence requires a live run with pre-registered metrics. \textbf{No user study.} The companion claims rest on benchmark behavior and the audit loop, not yet on longitudinal user studies.
+
+\section{Ethical considerations}
+The layer is built around a safety perimeter, so we state its dual-use surface plainly. \emph{Data:} all corpora are public and used per their licenses --- SWE-bench and SWE-Gym (GitHub issues and pull requests), published case reports (PubMed Central), public market, astronomy, film, education and archive datasets for the eleven personas, and, for the security persona, a public AI-misuse threat-intelligence report, public threat reporting, and public safety-benchmark prompt sets; records about real people (for example missing-person case files) are used only as published and are not redistributed in the stores; no human-subjects research, no annotators, and no private data were involved; the store's hash-chained audit chain records actions and artifacts with secrets mapped to names, reducing credential leakage rather than increasing it. \emph{Dual use:} a personality layer mediates what an agent says and refuses; in adversarial hands the same machinery could suppress warnings or manufacture false confidence. The design counters this structurally --- every lesson is inspectable, correctable, and deletable plain data, the user owns the store, L1 security rules cannot be overridden by learned content, and the output auditor flags unsupported claims before display. \emph{Behavioral risks:} confirmed-outcome learning can encode a user's own biases; temperature calibration refits and per-wave snapshots with rollback bound, but do not eliminate, this drift. \emph{Compute:} the MB-scale CPU-only target keeps the environmental footprint small by construction. No research with human subjects was conducted.
+
+\paragraph{A call for independent reproduction.} Every experiment in this paper was run by one person on a single consumer PC --- no datacenter, no cluster, no institutional evaluation infrastructure --- with a low-cost flash-tier model through a public API, under the step, time, and cost limits stated in Section~\ref{sec:setup}. These conditions shaped the results: commands were cut off at 60\,s, runs stopped at \$3, and infrastructure retries and missing receipts are part of the record. We therefore ask the community to reproduce and extend these results on proper evaluation infrastructure: rerun the paired SWE-bench Verified A/B, ideally with the precedent channel keyed on the problem statement and with stronger backbones; rerun the five-field test with a significance test; keep training Keel Guard on new misuse cases and benign look-alikes and re-score it on fresh held-out sets; and grow pblocks in new domains. Everything needed is released --- the engine, the trained stores, the runner, the test sets, and every grade report and session tape --- and we will link independent results, whatever they show, from the project repository.
+
+\paragraph{Reproducibility.} Everything is released: the Persona engine with its guides and a worked example (\url{https://github.com/kresearch-labs/Persona}); the Aura agent with Persona inside (\url{https://github.com/kresearch-labs/aura-agent}); and the evidence (\url{https://github.com/kresearch-labs/persona-evidence}) --- the 1{,}000-run SWE-bench package (24 official grade reports, manifest, receipts, session tapes, incident log, frozen design document), the sealed five-field test, the eight showcase runs, and the Keel Guard evaluation (test set, scorer, both result files, and the Llama Guard comparison). The trained pblocks are published in packed form and linked from the evidence repository. Every number in the results can be recomputed from these files.
+
+% bibliographystyle set by acl.sty (acl_natbib)
+\bibliography{references}
+
+\appendix
+
+\section{The Developmental Study (full method)}
+\label{app:dev}
+Substrate: 48-unit modular graph net + 24 dormant pool, editable topology (grow/prune/duplicate/rewire driven by teacher-correction EMA). Teacher: BFS demonstrations + DAgger corrections + fading scaffold (assistance anneal $1.00\to0.15$). Arms: A (fixed, no teacher) / B (plastic, no teacher) / C (fixed, teacher) / D (plastic + teacher), $2\times2$ factorial. Metrics: module-adjacency Jaccard (struct\_vec) + edge-level signed connectivity; validated by four stress tests (monotone $\rho{=}1.0$; relabeling invariance 0.0). Power: k=3 pilot $\to$ k=10 powered $\to$ $n{=}20$--40/world, pre-registered. Results: divergence hypothesis falsified (six tests); behavioral divergence robust ($d{=}0.10$, $p{=}0.0002$); teacher competence $14\times$; swap/cut causal probes confirm guidance-dependence; two-domain teaching-channel law (toothache Holm $p{=}0.0044$; boundary Holm $p{=}0.0018$).
+
+\section{The 11-Domain Generality Demonstration}
+\label{app:chain11}
+\begin{table}[h]
+\centering
+\scriptsize
+\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.75cm}p{0.4cm}>{\raggedright\arraybackslash}p{1.45cm}>{\raggedright\arraybackslash}p{2.6cm}@{}}
+\toprule
+Domain & hd & corpus & artifact ($\circ$ = human gate, $\bullet$ = honest negative) \\
+\midrule
+Forecaster & 7 & 320 mkts & 50-mkt batch, MSD 0.011; held on 300-mkt holdout \\
+Astronomer & 6 & 100 TESS curves & TOI 1062.01: 0.939 = NASA-confirmed \\
+Detective & 4/5 & 400 NamUs & 3 triage ledgers, gated; aged-case head weak $\circ$ \\
+Mathematician & 6 & 90 OEIS & 8 analyses; A131393 result \\
+Movie & 6 & 45K films & concept pkg; grosses verified \\
+Game-designer & 3/4 & pcg bench & mutation walks, machine-graded \\
+Doctor & 5 & 99 PMC cases & 4 consults, clinician gate $\circ$ \\
+Legal & 8 & 90 cases & info sheet, UPL gate $\circ$ \\
+Teacher & 6 & 1,000 students & plans, instructor gate $\circ$ \\
+Historian & 8 & 946 passages & holdout: honest MISS $\bullet$ \\
+Assistive & 6 & WCAG 2.2 & 4 interfaces; weak seeds noted $\bullet$ \\
+\bottomrule
+\end{tabular}
+\caption{The 11-domain demonstration: pblocks grown autonomously from real corpora in one session ($<$\$1 model spend). Three honest negatives stand ($\bullet$); $\circ$ = output stopped at its human gate.}
+\label{tab:chain11}
+\end{table}
+
+\section{Harm-Area Security Mapping}
+\label{app:harm}
+\begin{table}[H]
+\centering
+\footnotesize\setlength{\tabcolsep}{3pt}\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}p{3.6cm}@{}}
+\toprule
+Harm area (documented) & Capability the misuse needs & Layer mechanism that answers it \\
+\midrule
+Cyber operations & chained tool actions, kill chains & action-level claim audit; every step verified before execution \\
+Influence operations & fabricated persona networks & provenance-tracked, auditable personas (``a persona network of pblocks is auditable in plain data; one of prompts is a ghost army'') \\
+Surveillance & mass data-gathering loops & edge-of-territory refusal; escalation instead of improvisation \\
+Scams and fraud & scaled deceptive messaging & calibrated pushback; verified-append store cannot be seeded by unverified successes \\
+Biological / weapons misuse & dangerous-assistance planning & L1 hard lines verbatim, precedence-protected; refuse-at-the-edge \\
+Distillation & extracting guardrailed behavior & judgment lives in store + small heads, not weights (design property; measurement future work) \\
+\bottomrule
+\end{tabular}
+\caption{Each documented harm area mapped to the layer mechanism that answers it.}
+\label{tab:harm}
+\end{table}
+
+
+
+\section{Design Freeze}
+\label{app:freeze}
+The campaign's frozen design document is released with the evidence package. Both arms ran the same agent, model, configuration, and grading protocol for all ten waves; regrades (v2) follow the documented protocol: in waves 8 and 10 only the panel arm needed one, after the environment-failure retries the pre-registered rules allow (no-panel runs needed none); the wave-9 arbitration re-ran errored gradings in both arms.
+
+\end{document}

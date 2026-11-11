@@ -1,0 +1,20 @@
+diff --git a/seaborn/_core/scales.py b/seaborn/_core/scales.py
+index 55874bf2..3749cc88 100644
+--- a/seaborn/_core/scales.py
++++ b/seaborn/_core/scales.py
+@@ -378,7 +378,15 @@ class ContinuousBase(Scale):
+             axis.set_view_interval(vmin, vmax)
+             locs = axis.major.locator()
+             locs = locs[(vmin <= locs) & (locs <= vmax)]
++            # The formatter may include an offset (e.g. "1e6" for large
++            # values), which is not part of the individual tick labels.
++            # Include it in each label so legends are not misleading.
++            # Note: the offset is only computed during formatting, so it
++            # must be retrieved after format_ticks.
+             labels = axis.major.formatter.format_ticks(locs)
++            offset_text = axis.major.formatter.get_offset()
++            if offset_text:
++                labels = [f"{label} {offset_text}" for label in labels]
+             new._legend = list(locs), list(labels)
+ 
+         return new

@@ -1,0 +1,101 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index 9735ce10c8..31fa2c0622 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -545,11 +545,96 @@ class Query(BaseExpression):
+ 
+         return dict(zip(outer_query.annotation_select, result))
+ 
++    def strip_unused_annotations(self):
++        """
++        Remove annotations that are not referenced by filters, other
++        annotations, or ordering so they don't have to be computed, e.g.
++        when performing a COUNT() query.
++        """
++        if not self.annotations:
++            return
++        annotations = self.annotations
++        alias_ids = {id(expr): alias for alias, expr in annotations.items()}
++        used = set()
++
++        def collect_used(node):
++            # Annotations are referenced from expressions either directly
++            # (resolved expressions share the objects stored in
++            # self.annotations) or, when unresolved, by name (F() and Ref()
++            # keep the alias they were created with).
++            if node is None:
++                return
++            if id(node) in alias_ids:
++                used.add(alias_ids[id(node)])
++            if isinstance(node, (F, Ref)):
++                name = (
++                    getattr(node, "refs", None) or node.name
++                ).split(LOOKUP_SEP)[0]
++                if name in annotations:
++                    used.add(name)
++            if hasattr(node, "get_source_expressions"):
++                for source in node.get_source_expressions():
++                    if source is not None:
++                        collect_used(source)
++            for child in getattr(node, "children", ()) or ():
++                collect_used(child)
++
++        def collect_used_name(name):
++            name = name.split(LOOKUP_SEP)[0]
++            if name in annotations:
++                used.add(name)
++
++        # Filters (the HAVING clause lives in the where tree until it is
++        # split by the compiler).
++        collect_used(self.where)
++        # Explicit grouping.
++        if isinstance(self.group_by, tuple):
++            for expr in self.group_by:
++                if isinstance(expr, str):
++                    collect_used_name(expr)
++                else:
++                    collect_used(expr)
++        # Ordering may reference annotations by name or through expressions.
++        ordering = list(self.order_by) + list(self.extra_order_by)
++        if self.default_ordering:
++            ordering += self.model._meta.ordering
++        for item in ordering:
++            if isinstance(item, str):
++                collect_used_name(item[1:] if item.startswith("-") else item)
++            else:
++                collect_used(item)
++        # Annotations referenced by used annotations are used as well.
++        while True:
++            size = len(used)
++            for alias in list(used):
++                collect_used(annotations[alias])
++            if len(used) == size:
++                break
++        for alias in set(annotations) - used:
++            del annotations[alias]
++        if self.annotation_select_mask is not None:
++            self.annotation_select_mask.intersection_update(used)
++        self._annotation_select_cache = None
++        # Prune joins that are no longer referenced. Only outer joins can be
++        # removed, as inner joins restrict the rows of the query.
++        keep_aliases = {self.base_table}
++        exprs = list(self.select) + list(self.where.children)
++        exprs += list(annotations.values())
++        for col in self._gen_cols(exprs):
++            keep_aliases.add(col.alias)
++        for alias in self.alias_map:
++            if (
++                alias not in keep_aliases
++                and self.alias_map[alias].join_type == LOUTER
++            ):
++                self.unref_alias(alias, self.alias_refcount[alias])
++
+     def get_count(self, using):
+         """
+         Perform a COUNT() query using the current filter constraints.
+         """
+         obj = self.clone()
++        obj.strip_unused_annotations()
+         obj.add_annotation(Count("*"), alias="__count", is_summary=True)
+         return obj.get_aggregation(using, ["__count"])["__count"]
+ 

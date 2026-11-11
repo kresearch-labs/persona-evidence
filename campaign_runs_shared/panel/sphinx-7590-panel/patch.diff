@@ -1,0 +1,41 @@
+diff --git a/sphinx/domains/cpp.py b/sphinx/domains/cpp.py
+index fe52d881d..d71f0cc8a 100644
+--- a/sphinx/domains/cpp.py
++++ b/sphinx/domains/cpp.py
+@@ -35,7 +35,7 @@ from sphinx.util.cfamily import (
+     BaseParser, DefinitionError, UnsupportedMultiCharacterCharLiteral,
+     identifier_re, anon_identifier_re, integer_literal_re, octal_literal_re,
+     hex_literal_re, binary_literal_re, float_literal_re,
+-    char_literal_re
++ char_literal_re, udl_suffix_re
+ )
+ from sphinx.util.docfields import Field, GroupedField
+ from sphinx.util.docutils import SphinxDirective
+@@ -4682,7 +4682,13 @@ class DefinitionParser(BaseParser):
+                 self.fail("Can not handle character literal"
+                           " resulting in multiple decoded characters.")
+ 
+-        # TODO: user-defined lit
++        # user-defined literal
++        # (the suffix is optional for string literals)
++        pos = self.pos
++        if self.match(udl_suffix_re):
++            suffix = self.matched_text
++            return ASTUDLLiteral(self.definition[startPos:pos] + suffix)
++
+         return None
+ 
+     def _parse_fold_or_paren_expression(self) -> ASTExpression:
+diff --git a/sphinx/util/cfamily.py b/sphinx/util/cfamily.py
+index 790a492a5..47a0054b9 100644
+--- a/sphinx/util/cfamily.py
++++ b/sphinx/util/cfamily.py
+@@ -66,6 +66,8 @@ char_literal_re = re.compile(r'''(?x)
+       ))
+     )'
+ ''')
++udl_suffix_re = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*')
++
+ 
+ 
+ def verify_description_mode(mode: str) -> None:

@@ -1,0 +1,1 @@
+Retinal migraine (migraine presenting as transient monocular visual loss — amaurosis fugax — with associated headache, in a young patient with a normal neurological examination and no vascular risk factors).

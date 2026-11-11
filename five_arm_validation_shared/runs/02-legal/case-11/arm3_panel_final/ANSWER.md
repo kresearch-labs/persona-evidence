@@ -1,0 +1,21 @@
+# Case 11 — Anti-Assignment Clause in a Structured-Settlement Annuity
+
+## Issues the clause presents
+
+1. **Construction — what kind of term is this?** The clause ("[n]o payment under this annuity contract may be assigned in any manner by the [payee]") must be classified as one of three things: (a) a limitation on the payee's *power* to assign, (b) language that *invalidates* an assignment made in violation, or (c) a mere *covenant not to assign*, breach of which sounds only in damages. The text resolves the question: it directs what the payee "may" do, says nothing about the legal effect of a violation, and contains none of the classic invalidating words ("void," "invalid," "of no effect," "no assignee shall take or enforce any right"). It is addressed to the payee's conduct, not to the assignee's rights.
+
+2. **Interaction with the transfer statute.** The structured-settlement statute requires judicial approval and directs the court to find the transfer "in the best interests of the payee and . . . fair and reasonable to all interested parties under all of the circumstances then existing." The issues are whether that approval regime evidences a legislative intent to override anti-assignment clauses (the issuer's argument) or whether it merely adds a protective condition — satisfied here — while leaving the parties' private contract rights to be construed under ordinary contract law.
+
+3. **Enforcement and remedy.** If the clause is a covenant, the issuer's remedy is a damages claim against the payee for breach, not invalidation of the assignment or a veto over the court-approved transfer. A related issue is whether the issuer suffered any cognizable damage: its obligation to pay the same periodic sums is unchanged; only the payee to whom the sums are directed has changed — so damages would likely be nominal.
+
+## Construction
+
+Under settled case law and Restatement (Second) of Contracts § 322(2), a term prohibiting assignment does not render an assignment ineffective unless the term clearly evidences an intent to forbid the assignment itself or to make a violation void. A bare prohibition "operates as a covenant not to assign," and breach gives the obligor a claim for damages. This clause lacks any invalidating language, so it is properly construed as a covenant not to assign. The breadth of "in any manner" does not change the analysis: breadth of prohibition is not invalidation, and even the strongest covenant language is given covenant effect absent clear words voiding the assignment. The statute does not displace this result; it supplies the judicial-approval condition for a valid transfer, which the trial court satisfied, and it nowhere conditions approval on the absence of anti-assignment clauses or purports to make such clauses dispositive.
+
+## Enforcement
+
+The court-approved assignment stands. The issuer may not ignore or defeat the transfer; its protection is the covenant, and its remedy is an action against the payee for breach — actual damages, which on these facts are likely nominal because the issuer's payment obligations are identical in amount and timing and only the direction of payment changes. The issuer's contrary arguments fail: (a) "freely bargained clause cannot be ignored" — the clause is not ignored; it is enforced exactly as written, as a promise whose breach sounds in damages, and freedom of contract means the parties' chosen words (covenant language, not invalidating language) govern; (b) "the statute shows no intent to override anti-assignment provisions" — no statutory override is needed, because the common-law rule of construction already gives the clause covenant effect, and the statute's protective purpose (guarding payees in transfer transactions) was served by the approval process; (c) the issuer's remaining protection is prospective — a payee wanting to preserve a veto must draft invalidating language, and a sophisticated issuer that failed to do so cannot have the court rewrite the clause after the fact.
+
+## Bottom line
+
+The clause is a covenant not to assign, not a limitation on the payee's power or a voiding provision; the judicially approved assignment is effective, and the issuer's exclusive recourse is a damages claim against the payee for breach.

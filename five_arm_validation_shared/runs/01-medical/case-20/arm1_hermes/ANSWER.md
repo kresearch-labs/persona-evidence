@@ -1,0 +1,9 @@
+# Arm 1 — Reference answer — 01-medical case-20
+
+**Most likely diagnosis: antiphospholipid syndrome (APS) — the unifying hypercoagulable process behind simultaneous venous and arterial thrombosis ("thrombotic storm"): unprovoked DVT/PE two months ago, now noncompliant with apixaban, presenting with a catastrophic biologic combination of acute LAD thrombosis (anterior STEMI), biventricular apical thrombi with severely reduced systolic function, distal aortic and popliteal arterial thrombosis, and acute limb ischemia.**
+
+**One-line justification:** the case asks for the process that unifies venous AND arterial clotting in one patient within two months — antiphospholipid syndrome is the textbook answer: a 44-year-old with "unprovoked" DVT/PE, atrial-level arterial events (coronary thrombosis) plus peripheral arterial occlusion plus intracardiac thrombi after just one month off anticoagulation; APS antibodies (lupus anticoagulant, anticardiolipin, anti-β2-glycoprotein-I) drive thrombosis in every vascular bed and are the mandatory test here, with fever and leukocytosis reflecting the extensive infarcting thrombosis (and thrombocytopenia 114k being a common APS companion).
+
+**Brief differential:** heparin-induced thrombocytocytopenia (not on heparin at onset), occult cancer-associated thrombophilia (possible; warrants screening), essential thrombocythemia or other myeloproliferative disease (platelets low, not high), and catastrophic APS (the presentation is severe but multi-organ failure isn't yet established).
+
+**Key point:** simultaneous venous + arterial thrombosis in a young patient = APS until antibody panels say otherwise; and in confirmed or suspected APS, warfarin (not DOAC) is the evidence-based anticoagulant — his apixaban noncompliance then detonated the whole vascular tree.

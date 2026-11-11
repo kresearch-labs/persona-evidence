@@ -1,0 +1,31 @@
+diff --git a/lib/matplotlib/contour.py b/lib/matplotlib/contour.py
+index 3f84250b64..e999059cbb 100644
+--- a/lib/matplotlib/contour.py
++++ b/lib/matplotlib/contour.py
+@@ -932,6 +932,13 @@ class ContourSet(ContourLabeler, mcoll.Collection):
+                 ", ".join(map(repr, kwargs))
+             )
+ 
++    def get_paths(self):
++        return self._paths
++
++    def set_paths(self, paths):
++        self._paths = paths
++        self.stale = True
++
+     allsegs = _api.deprecated("3.8", pending=True)(property(lambda self: [
+         p.vertices for c in self.collections for p in c.get_paths()]))
+     allkinds = _api.deprecated("3.8", pending=True)(property(lambda self: [
+diff --git a/lib/matplotlib/contour.pyi b/lib/matplotlib/contour.pyi
+index c7179637a1..4c631d8947 100644
+--- a/lib/matplotlib/contour.pyi
++++ b/lib/matplotlib/contour.pyi
+@@ -154,6 +154,8 @@ class ContourSet(ContourLabeler, Collection):
+     def legend_elements(
+         self, variable_name: str = ..., str_format: Callable[[float], str] = ...
+     ) -> tuple[list[Artist], list[str]]: ...
++    def get_paths(self) -> list[Path]: ...
++    def set_paths(self, paths: Sequence[Path]) -> None: ...
+     def find_nearest_contour(
+         self, x: float, y: float, indices: Iterable[int] | None = ..., pixel: bool = ...
+     ) -> tuple[Collection, int, int, float, float, float]: ...

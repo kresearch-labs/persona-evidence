@@ -1,0 +1,3 @@
+**Most likely diagnosis: Focal atrial tachycardia arising from an inferior left atrial focus (a positional, automatic/triggered-activity focal atrial tachycardia in a structurally normal heart).**
+
+Justification: Telemetry/continuous 12-lead ECG shows a reproducible ~140 bpm tachycardia with P-wave morphology of an inferior left atrial focus, abrupt onset without preceding PR prolongation, and "warm-up" shortening of the R-R interval — the signature of focal (non-sinus, non-reentrant AV-nodal) atrial tachycardia — induced only in recumbency/bending forward, with a normal echo and normal oxygenation excluding pulmonary embolism despite the contraceptive/family-history distractors.

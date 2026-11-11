@@ -1,0 +1,3 @@
+HOLD — do not initiate a new position at $12.90, and existing holders should wait for proof the turnaround is working before adding.
+
+Why: the >90% drawdown from the $160+ peak already prices a demand collapse, and the ~7M-member subscription base plus management's inventory sell-down path to "positive free cash flow in FY23" leave real option value; but the whole case hangs on one unproven bet — that June's repricing (cheaper hardware, pricier subscriptions) lifts revenue without spiking churn — while the top line shrinks, losses run at $757M a quarter, and Apple, Lululemon, Tonal and reopened gyms crowd the field, so the risk/reward is balanced until post-June churn and FY23 cash-flow data confirm the plan.

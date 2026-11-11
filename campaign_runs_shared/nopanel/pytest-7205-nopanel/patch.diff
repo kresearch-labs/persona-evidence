@@ -1,0 +1,35 @@
+diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py
+index ecec2aa3d..01f25a449 100644
+--- a/src/_pytest/assertion/rewrite.py
++++ b/src/_pytest/assertion/rewrite.py
+@@ -636,6 +636,11 @@ class AssertionRewriter(ast.NodeVisitor):
+             ast.alias("builtins", "@py_builtins"),
+             ast.alias("_pytest.assertion.rewrite", "@pytest_ar"),
+         ]
++        # Python 3.12 requires lineno/col_offset on every ast.alias node.
++        for _al in aliases:
++            if not hasattr(_al, "lineno"):
++                _al.lineno = 1
++                _al.col_offset = 0
+         doc = getattr(mod, "docstring", None)
+         expect_docstring = doc is None
+         if doc is not None and self.is_rewrite_disabled(doc):
+diff --git a/src/_pytest/setuponly.py b/src/_pytest/setuponly.py
+index c9cc589ff..9e4cd9519 100644
+--- a/src/_pytest/setuponly.py
++++ b/src/_pytest/setuponly.py
+@@ -1,4 +1,5 @@
+ import pytest
++from _pytest._io.saferepr import saferepr
+ 
+ 
+ def pytest_addoption(parser):
+@@ -66,7 +67,7 @@ def _show_fixture_action(fixturedef, msg):
+             tw.write(" (fixtures used: {})".format(", ".join(deps)))
+ 
+     if hasattr(fixturedef, "cached_param"):
+-        tw.write("[{}]".format(fixturedef.cached_param))
++        tw.write("[{}]".format(saferepr(fixturedef.cached_param, maxsize=42)))
+ 
+     tw.flush()
+ 

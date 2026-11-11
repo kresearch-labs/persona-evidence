@@ -1,0 +1,3 @@
+Most likely diagnosis: lead poisoning (plumbism) caused by heavy-metal–contaminated traditional ayurvedic medications (notably the metallic-appearing paste) ingested since his trip to India.
+
+Justification: the subacute weakness, dizziness, nausea and diffuse myalgia with normochromic haemolytic-type anaemia (Hb 78 g/L, reticulocytes 5.7%), basophilic stippling of red cells, mildly elevated transaminases and marrow siderosis are classic for lead toxicity, and the recent intake of ayurvedic remedies — a well-documented source of lead (and other heavy metal) contamination — provides the exposure, with no occupational or gastrointestinal alternative explanation.

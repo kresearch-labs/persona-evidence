@@ -1,0 +1,61 @@
+[pruned tool output]
+1|# UE5.8.3 headless editor script: import FBX, assemble storm island scene, save map.
+2|# Run: UnrealEditor-Cmd ScalTest.uproject -run=pythonscript -script=<this file> -nullrhi
+3|# Writes a build report to logs/scene_build.txt (stdout capture is unreliable).
+4|import unreal, os
+5|
+6|BASE = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+7|ASSETS = os.path.join(BASE, "assets_blender")
+8|REPORT = os.path.join(BASE, "logs", "scene_build.txt")
+9|rep_lines = []
+10|
+11|def note(msg):
+12|    rep_lines.append(msg)
+13|    unreal.log("[SCAL] %s" % msg)
+14|
+15|# --- imports (idempotent: replace_existing) ---
+16|TASKS = []
+17|def import_fbx(filename, dest):
+18|    task = unreal.AssetImportTask()
+19|    task.filename = os.path.join(ASSETS, filename)
+20|    task.destination_path = "/Game/ScalContent/" + dest
+21|    task.destination_name = dest
+22|    task.automated = True
+23|    task.save = True
+24|    task.replace_existing = True
+25|    TASKS.append(task)
+26|
+27|import_fbx("env.fbx", "SM_Env")
+28|import_fbx("lighthouse.fbx", "SM_Lighthouse")
+29|import_fbx("props.fbx", "SM_Props")
+30|unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks(TASKS)
+31|note("imports done")
+32|
+33|def meshes_under(folder):
+34|    out = []
+35|    for a in unreal.EditorAssetLibrary.list_assets(folder, recursive=True):
+36|        obj = unreal.EditorAssetLibrary.load_asset(a)
+37|        if obj and obj.get_class().get_name() == "StaticMesh":
+38|            out.append(obj)
+39|    return out
+40|
+41|env_meshes = meshes_under("/Game/ScalContent/SM_Env")
+42|lh_meshes = meshes_under("/Game/ScalContent/SM_Lighthouse")
+43|prop_meshes = meshes_under("/Game/ScalContent/SM_Props")
+44|note("meshes env=%d lh=%d props=%d" % (len(env_meshes), len(lh_meshes), len(prop_meshes)))
+45|
+46|# --- level (idempotent) ---
+47|map_path = "/Game/Lvl_ScalStorm"
+48|try:
+49|    unreal.EditorLevelLibrary.new_level(map_path)
+50|except Exception as e:
+51|    note("new_level failed (%s), loading existing" % e)
+52|    unreal.EditorLevelLibrary.load_level(map_path)
+53|
+54|def spawn(cls, name, loc, rot=(0, 0, 0)):
+55|    sub = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+56|    a = sub.spawn_actor_from_class(cls, unreal.Vector(*loc), unreal.Rotator(*rot))
+57|    if a:
+58|        a.set_actor_label(name)
+59|    return a
+60|

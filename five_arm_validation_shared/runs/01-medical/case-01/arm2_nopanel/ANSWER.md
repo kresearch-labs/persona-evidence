@@ -1,0 +1,1 @@
+Newly diagnosed diabetes mellitus presenting with diabetic ketosis (ketosis without ketoacidosis) — the severe vomiting is a manifestation of the ketotic state, supported by RBS 391 mg/dl with 4+ glucosuria and 4+ ketonuria at normal pH (7.4) and bicarbonate (25 mmol/L).

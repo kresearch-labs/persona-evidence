@@ -1,0 +1,58 @@
+diff --git a/django/db/models/fields/related_descriptors.py b/django/db/models/fields/related_descriptors.py
+index d5aa968400..39a2c93289 100644
+--- a/django/db/models/fields/related_descriptors.py
++++ b/django/db/models/fields/related_descriptors.py
+@@ -141,11 +141,16 @@ class ForwardManyToOneDescriptor:
+         queryset = queryset.filter(**query)
+ 
+         # Since we're going to assign directly in the cache,
+-        # we must manage the reverse relation cache manually.
++        # we must manage the reverse relation cache manually. Skip
++        # related objects whose caches were already populated while the
++        # queryset was evaluated, e.g. by nested prefetches, to avoid
++        # replacing them with instances carrying a different set of
++        # deferred fields.
+         if not remote_field.multiple:
+             for rel_obj in queryset:
+                 instance = instances_dict[rel_obj_attr(rel_obj)]
+-                remote_field.set_cached_value(rel_obj, instance)
++                if not remote_field.is_cached(rel_obj):
++                    remote_field.set_cached_value(rel_obj, instance)
+         return queryset, rel_obj_attr, instance_attr, True, self.field.get_cache_name(), False
+ 
+     def get_object(self, instance):
+@@ -374,10 +379,15 @@ class ReverseOneToOneDescriptor:
+         queryset = queryset.filter(**query)
+ 
+         # Since we're going to assign directly in the cache,
+-        # we must manage the reverse relation cache manually.
++        # we must manage the reverse relation cache manually. Skip
++        # related objects whose caches were already populated while the
++        # queryset was evaluated, e.g. by nested prefetches, to avoid
++        # replacing them with instances carrying a different set of
++        # deferred fields.
+         for rel_obj in queryset:
+             instance = instances_dict[rel_obj_attr(rel_obj)]
+-            self.related.field.set_cached_value(rel_obj, instance)
++            if not self.related.field.is_cached(rel_obj):
++                self.related.field.set_cached_value(rel_obj, instance)
+         return queryset, rel_obj_attr, instance_attr, True, self.related.get_cache_name(), False
+ 
+     def __get__(self, instance, cls=None):
+@@ -644,10 +654,14 @@ def create_reverse_many_to_one_manager(superclass, rel):
+             queryset = queryset.filter(**query)
+ 
+             # Since we just bypassed this class' get_queryset(), we must manage
+-            # the reverse relation manually.
++            # the reverse relation manually. Skip related objects whose caches
++            # were already populated while the queryset was evaluated, e.g. by
++            # nested prefetches, to avoid replacing them with instances
++            # carrying a different set of deferred fields.
+             for rel_obj in queryset:
+                 instance = instances_dict[rel_obj_attr(rel_obj)]
+-                setattr(rel_obj, self.field.name, instance)
++                if not self.field.is_cached(rel_obj):
++                    setattr(rel_obj, self.field.name, instance)
+             cache_name = self.field.remote_field.get_cache_name()
+             return queryset, rel_obj_attr, instance_attr, False, cache_name, False
+ 

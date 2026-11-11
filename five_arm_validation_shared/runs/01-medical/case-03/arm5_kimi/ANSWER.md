@@ -1,0 +1,1 @@
+Most likely diagnosis: Positional (posture-induced) focal atrial tachycardia — a paroxysmal automatic atrial tachycardia arising from an ectopic focus in the inferior left atrium, in a structurally normal heart.

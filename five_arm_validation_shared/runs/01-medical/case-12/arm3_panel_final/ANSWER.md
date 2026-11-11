@@ -1,0 +1,3 @@
+Acute decompensated diastolic heart failure (HFpEF) with flash pulmonary edema mimicking community-acquired pneumonia.
+
+Justification: proBNP 4056 pg/mL (~32× the ≤125 reference), echocardiographic diastolic dysfunction with preserved EF, cardiomegaly, orthopnea and lower-extremity edema, plus a completely negative infectious (Mycoplasma, Legionella, Chlamydia, blood cultures), PE (low-probability V/Q) and autoimmune (C/P-ANCA, ANA) workup with antibiotic-refractory diffuse ground-glass infiltrates, all indicate hydrostatic pulmonary edema from hypertensive/diabetic diastolic heart failure rather than pneumonia.

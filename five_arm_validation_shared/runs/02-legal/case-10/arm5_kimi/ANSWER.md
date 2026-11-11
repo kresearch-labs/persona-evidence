@@ -1,0 +1,27 @@
+# Case 10 — Section 3.22 (Material Customers / Material Vendors Representation)
+
+## Issues the clause presents
+
+1. **Scope of "material adverse change in the business relationship."** The central dispute: does a sustained decline in revenue from a Material Customer constitute a "material adverse change in the business relationship," or only a formal change such as termination, renegotiation, or amendment? Sellers urge the narrow reading; the buyer contends revenue loss is the quintessential measure of an adverse change in a customer relationship.
+2. **Temporal reach ("Since the Lookback Date").** The representation speaks as of signing about the period since the Lookback Date. Sellers' own pre-signing internal presentation flagged the two largest accounts as those "with decreasing revenues," putting the truth of the representation *when made* squarely in issue.
+3. **Materiality.** Whether the reduction or termination of business by two or three of the ten Material Customers — including the largest accounts — is "material" within the meaning of clause (i), and how clause (i) (adverse change in the relationship) relates to clause (ii) (change in any material term of the arrangements).
+4. **Pleading sufficiency.** Whether the buyer's complaint alleges a reasonably conceivable breach or only conclusory "fluctuations of revenue growth and decline."
+5. **Survival period vs. the exclusive-remedy carve-out.** Whether the contract count is time-barred by the fifteen-month survival period, and whether the carve-out for "[a]ctions for fraud, intentional misrepresentation or intentional breach" removes the claim from that bar.
+6. **Interplay with the fraud claim.** Whether the same facts (a knowingly false customer representation) support fraudulent inducement outside the contractual survival and remedy limitations.
+
+## How the clause should be construed
+
+- **Plain meaning favors the buyer.** A "business relationship" with a customer consists of the volume and terms of business actually done. A sustained, material decline in a top customer's revenue is an adverse change in that relationship; revenue is the quintessential measure of its health. Sellers' narrow reading would collapse clause (i) into clause (ii) — every qualifying change would have to be a change in a "material term" — rendering clause (i) surplusage, which Delaware construction canons forbid.
+- **The companion sentence confirms the broad reading.** The no-notice sentence reaches *threatened* cessations and *threatened* adverse pricing changes; the first sentence reaches *actual* adverse changes. Together they cover the full spectrum of customer-relationship deterioration, and each sentence is given independent work.
+- **"Material" qualifies the change, not the count.** A breach can rest on an adverse change with even one Material Customer if the change is material; the loss or reduction of the two largest accounts is material on any reasonable pleading.
+- **Contra proferentem as backstop.** If the phrase were found ambiguous, extrinsic evidence (including sellers' internal presentation) would be considered, and any residual ambiguity would be construed against the sellers as drafters. The better view, however, is that the clause unambiguously reaches material revenue declines from Material Customers.
+
+## How it should be enforced in this dispute
+
+- **Deny dismissal on the merits.** On a motion to dismiss, the buyer need only plead facts making a breach reasonably conceivable. Allegations that the top three customers reduced or terminated their business, that at least two of the ten Material Customers showed pre-signing "decreasing revenues," and that sellers' own internal presentation documented the declines are well-pleaded facts, not conclusory assertions of mere revenue "fluctuations."
+- **Survival period enforced as written — but the carve-out controls.** Delaware enforces contractual survival periods as agreed limitations periods, so a claim for *non-intentional* breach first asserted after fifteen months is time-barred. But the exclusive-remedy provision expressly carves out "[a]ctions for fraud, intentional misrepresentation or intentional breach." Because the buyer pleads that sellers knew from their own pre-signing analysis that Section 3.22 was false when made, the intentional-breach theory falls within the carve-out and is not subject to the survival bar; the contract count should survive dismissal to that extent.
+- **Remedies.** For ordinary breach within the survival period, the exclusive-remedy (indemnification) regime governs. For fraud or intentional breach, the carve-out preserves the full range of contract and tort remedies, and the contractual limitations cannot shield the sellers from liability for their own deliberate falsehood — parties may not contractually insulate themselves from the consequences of intentional misrepresentation.
+
+## Bottom line
+
+The clause presents issues of scope, materiality, temporal falsity, pleading sufficiency, and the interaction of the survival period with the fraud/intentional-breach carve-out. It should be construed to reach material declines in Material Customer revenue (not merely formal terminations or amendments), and enforced by denying the motion to dismiss: the buyer's well-pleaded allegations state a reasonably conceivable breach, and the intentional-breach/fraud carve-out removes the claim from the fifteen-month survival bar.

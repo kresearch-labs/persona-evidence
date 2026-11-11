@@ -1,0 +1,1 @@
+Wilson's disease (hepatolenticular degeneration) — the combination of cirrhosis in a young adult, a golden-brown corneal ring (Kayser–Fleischer rings), neuropsychiatric features with tremor, ataxic dysarthria and depression, and T2/FLAIR signal in the thalami, midbrain and pons is the classic presentation.

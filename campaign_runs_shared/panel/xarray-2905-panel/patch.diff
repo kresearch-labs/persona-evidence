@@ -1,0 +1,57 @@
+diff --git a/xarray/core/dtypes.py b/xarray/core/dtypes.py
+index 167f00fa..c64d356e 100644
+--- a/xarray/core/dtypes.py
++++ b/xarray/core/dtypes.py
+@@ -38,7 +38,7 @@ NINF = AlwaysLessThan()
+ PROMOTE_TO_OBJECT = [
+     {np.number, np.character},  # numpy promotes to character
+     {np.bool_, np.character},  # numpy promotes to character
+-    {np.bytes_, np.unicode_},  # numpy promotes to unicode
++    {np.bytes_, np.str_},  # numpy promotes to unicode
+ ]
+ 
+ 
+diff --git a/xarray/core/missing.py b/xarray/core/missing.py
+index e6dd8b53..66c78bee 100644
+--- a/xarray/core/missing.py
++++ b/xarray/core/missing.py
+@@ -733,7 +733,7 @@ def interp_func(var, x, new_x, method, kwargs):
+         # scipy.interpolate.interp1d always forces to float.
+         # Use the same check for blockwise as well:
+         if not issubclass(var.dtype.type, np.inexact):
+-            dtype = np.float_
++            dtype = np.float64
+         else:
+             dtype = var.dtype
+ 
+diff --git a/xarray/core/variable.py b/xarray/core/variable.py
+index 45553eb9..63d24323 100644
+--- a/xarray/core/variable.py
++++ b/xarray/core/variable.py
+@@ -183,7 +183,15 @@ def _possibly_convert_objects(values):
+     validating that datetime64 and timedelta64 objects are within the valid date
+     range for ns precision, as pandas will raise an error if they are not.
+     """
+-    return np.asarray(pd.Series(values.ravel())).reshape(values.shape)
++    as_series = pd.Series(values.ravel(), copy=False)
++    result = np.asarray(as_series).reshape(values.shape)
++    if not result.flags.writeable:
++        # pandas copy-on-write mode creates read-only arrays by default
++        try:
++            result.flags.writeable = True
++        except ValueError:
++            result = result.copy()
++    return result
+ 
+ 
+ def as_compatible_data(data, fastpath=False):
+@@ -218,7 +226,8 @@ def as_compatible_data(data, fastpath=False):
+         data = np.timedelta64(getattr(data, "value", data), "ns")
+ 
+     # we don't want nested self-described arrays
+-    data = getattr(data, "values", data)
++    if isinstance(data, (pd.Series, pd.Index, pd.DataFrame)):
++        data = data.values
+ 
+     if isinstance(data, np.ma.MaskedArray):
+         mask = np.ma.getmaskarray(data)

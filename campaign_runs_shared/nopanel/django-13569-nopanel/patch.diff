@@ -1,0 +1,16 @@
+diff --git a/django/db/models/functions/math.py b/django/db/models/functions/math.py
+index 304e112225..b10b55e616 100644
+--- a/django/db/models/functions/math.py
++++ b/django/db/models/functions/math.py
+@@ -154,6 +154,11 @@ class Random(NumericOutputFieldMixin, Func):
+     def as_sqlite(self, compiler, connection, **extra_context):
+         return super().as_sql(compiler, connection, function='RAND', **extra_context)
+ 
++    def get_group_by_cols(self, alias=None):
++        # Random() is not part of any grouping; it must not be added to
++        # GROUP BY when used in order_by() (e.g. order_by('?')).
++        return []
++
+ 
+ class Round(Transform):
+     function = 'ROUND'

@@ -1,0 +1,104 @@
+{
+ "master": "song_main_p15_v5.wav",
+ "sustain_chords": {
+  "drop1": 0.044,
+  "drop2": 0.045
+ },
+ "sustain_lead": {
+  "drop1": 0.0,
+  "drop2": 0.0
+ },
+ "sustain_atmo": {
+  "drop1": 0.289,
+  "drop2": 0.274
+ },
+ "drops": {
+  "drop1": {
+   "rms": 0.2135,
+   "peak": 0.955,
+   "valley_peak": 0.448,
+   "onsets_per_sec": 6.1,
+   "noise_10_20k_dbfs": -41.5
+  },
+  "drop2": {
+   "rms": 0.2126,
+   "peak": 0.955,
+   "valley_peak": 0.447,
+   "onsets_per_sec": 5.8,
+   "noise_10_20k_dbfs": -41.45
+  }
+ },
+ "gates": [
+  [
+   "onsets >= 18/s drop1",
+   false,
+   "6.1"
+  ],
+  [
+   "onsets >= 18/s drop2",
+   false,
+   "5.8"
+  ],
+  [
+   "valley/peak <= 0.66 drop1",
+   true,
+   "0.448"
+  ],
+  [
+   "valley/peak <= 0.66 drop2",
+   true,
+   "0.447"
+  ],
+  [
+   "sustain chords <= 0.45",
+   true,
+   "{'drop1': 0.044, 'drop2': 0.045}"
+  ],
+  [
+   "sustain lead <= 0.45",
+   true,
+   "{'drop1': 0.0, 'drop2': 0.0}"
+  ],
+  [
+   "sustain atmo <= 0.45",
+   true,
+   "{'drop1': 0.289, 'drop2': 0.274}"
+  ],
+  [
+   "noise 10-20k <= -50 dBFS drop1",
+   false,
+   "-41.5"
+  ],
+  [
+   "noise 10-20k <= -50 dBFS drop2",
+   false,
+   "-41.45"
+  ],
+  [
+   "drop RMS >= 0.44",
+   false,
+   "0.2135/0.2126"
+  ],
+  [
+   "peak <= 0.975, 0 clipped",
+   true,
+   "pk 0.9550 clip 0"
+  ],
+  [
+   "mono < 120 Hz (side < 8%)",
+   true,
+   "0.32%"
+  ],
+  [
+   "breakdown contrast >= 2x (brms <= 0.5x drop)",
+   false,
+   "0.1444 = 67.6% of drop1"
+  ],
+  [
+   "crest >= 2.1",
+   true,
+   "4.47"
+  ]
+ ],
+ "npass": 8
+}

@@ -1,0 +1,353 @@
+[pruned tool output]
+1|# THE KEEPER'S LEDGER — DESIGN DOC (SPEC LOCK v1.0)
+2|Date: 2026-10-20. Engine: Unreal 5.8.3 (Step 1 verdict: PASS, 52fps steady @1080p medium, T1000).
+3|Owner: gamedesigner (LEAD). One owner per decision; decisions log and stick [game_director:5666e7d38315].
+4|Status: LOCKED for build. Changes require a dated entry in section 17 (Changelog).
+5|
+6|---
+7|
+8|## 1. VISION (game_director seat)
+9|
+10|**One line: The job is the story.**
+11|
+12|You are the last keeper of a storm-ravaged island lighthouse. The keepers before you
+13|vanished, one by one. The supply boat stopped coming. Every night a storm tests the
+14|light; every day the island shows you what last night cost — and what the keepers
+15|before you left behind.
+16|
+17|Pillars (in priority order — when in doubt, cut toward the top):
+18|1. **Every duty has mechanical weight.** Nothing is decorative. If a duty doesn't
+19|   change a number that matters, it doesn't ship.
+20|2. **The island remembers.** Wrecks, damage, erosion, reefs — the island is the
+21|   history of your playthrough, physically.
+22|3. **The record is the story.** No dialogue choices. An auditable log of duties done
+23|   and skipped decides what the inspector reads and which ending you earn.
+24|4. **The storm is the antagonist.** Procedural, readable, fair. It has tells. It
+25|   never cheats.
+26|
+27|Tone: quiet dread + competence fantasy. The Papers, Please precedent: mechanics carry
+28|the meaning; you live in the world your decisions produced.
+29|
+30|Name-promise check [game_director:76c0c46d67f3]: "The Keeper's Ledger" promises a
+31|keeper's job AND a ledger that matters. The build delivers exactly these two things.
+32|Feature creep is the enemy; anything not in this doc is out of scope.
+33|
+34|## 2. CORE LOOP (gamedesigner seat)
+35|
+36|**Cycle = one Day + one Night. Target 12–18 real minutes. A full run = 12 cycles + ending (~3h).**
+37|
+38|### DAY (work phase)
+39|1. **Read the night's report** at the log desk: what the beam did, which ships passed
+40|   or were lost, what failed, what washed ashore.
+41|2. **Duties** (each maps to mechanics — see section 3):
+42|   - Load oil / set the ration
+43|   - Clean the lens (clarity), repair the mechanism (rotation + wick feed)
+44|   - Salvage wrecks on Wreck Shore (parts, oil)
+45|   - Report wrecks at the chart house (marks them on the chart, prevents reefs)
+46|   - Maintain paths (drainage) where storms eroded them
+47|   - Keep the log (write the day's entry — feeds the record's completeness)
+48|3. **Explore** for the five traces of the previous keepers (optional, story-critical).
+49|4. **Light the lamp at dusk.** The night then runs on what you actually loaded, set,
+50|   cleaned, and repaired. No take-backs.
+51|
+52|### NIGHT (storm phase)
+53|- A procedural storm rolls in (section 4). The beam runs autonomously from your day's work.
+54|- You may move through the tower at night: trim the wick, nudge the ration, restart a
+55|  stalled mechanism — physical interventions under time pressure, not menus.
+56|- Ships spawn on lanes and resolve against your beam's real reach, the real fog, and
+57|  the real hazard map (including reefs your unreported wrecks became).
+58|- Outcomes post to the ledger at dawn: PASSED / TURNED AWAY / WRECKED.
+59|
+60|### DAWN
+61|Results post. Damage persists. New wrecks may have washed ashore. Autosave (diegetic:
+62|"the log is written"). The island shows its memory.
+63|
+64|## 3. THE JOB-MATTERS SYSTEMS (anti-decoration law — the heart of the game)
+65|
+66|### 3.1 OIL ECONOMY (game_balance_economist seat)
+67|- Oil is the single survival resource. Sources: salvage from wrecks (barrels), a finite
+68|  island reserve in the shed, no resupply (the boat is gone — that's the story).
+69|- **Burn rate = f(flame height).** You set flame height: higher = longer reach, more burn.
+70|- **Ration:** you set the night's ration at the tank. Tank capacity is finite; the
+71|  ration decides how long the light holds.
+72|- **Dark interval:** if oil hits zero mid-storm, the beam dies for as long as the oil
+73|  stays at zero. Every ship in fog during a dark interval is at maximum risk. The
+74|  record logs the interval to the minute.
+75|- Tradeoff: burn bright (save ships, drain reserve) vs ration (risk dark intervals).
+76|  Storm fury is random enough that neither pure strategy dominates [game_balance_economist:0b5d7f574911].
+77|
+78|### 3.2 LENS → BEAM REACH
+79|- **Clarity 0–100%:** salt crust and soot accumulate daily; cleaning restores it.
+80|  Clarity multiplies effective reach, and fog is the storm's main weapon — so lens
+81|  work is literally ships-saved.
+82|- **Alignment:** mechanism wear degrades alignment; repair restores it.
+83|- **Cracks:** neglect clarity below 20% for two nights and the lens cracks — a
+84|  permanent reach penalty until repaired with lens parts salvaged from wrecks.
+85|
+86|### 3.3 MECHANISM (rotation + wick feed)
+87|- The lens assembly rotates; the flash characteristic is how ships identify the light.
+88|  Wear → rotation stalls → steady beam → ships misread it in rain.
+89|- Wick feed jams → flame dips → dark intervals even with oil in the tank.
+90|- Both repaired with clockwork/gears salvaged from wrecks. Wear is visible (wobble,
+91|  tick irregularity — audio tells before failure).
+92|
+93|### 3.4 WRECKS → REEFS (the remembering island)
+94|- Storms wash wrecks ashore (hull sections, cargo, oil barrels, sometimes a crew's
+95|  belongings — story material).
+96|- Each wreck must be **salvaged** (parts + oil) AND **reported** at the chart house.
+97|- **Unreported wreck = unmarked hazard.** Later storms push it off the shore into the
+98|  approach lanes; it becomes a reef that wrecks future ships. The island literally
+99|  accumulates your neglect as new dangers on the map.
+100|- Reported wrecks get a buoy (built from salvage) — marked, safe, visible.
+101|- Island holds max 6 wreck sites. Each unreported one raises ship-loss odds in every
+102|  later storm. This is the game's memory made physical.
+103|
+104|### 3.5 THE KEEPER RECORD (auditable log — the story spine)
+105|- Every duty done or skipped posts a timestamped, categorized entry:
+106|  LAMP / LENS / MECHANISM / WRECKS / LOG / ISLAND.
+107|- Entries are **facts, not judgments**: "Night 4: dark interval 47 min. 2 ships unaccounted."
+108|- The record is a real serialized data structure (in the save file), viewable in-game
+109|  as the ledger book.
+110|- **The inspector reads it** at the end (section 6). The ending is arithmetic on the
+111|  record — no hidden flags, no dialogue.
+112|- **The five traces** (previous keepers) each show THEIR record fragment: what they
+113|  neglected, what it cost. The mystery assembles from records — yours and theirs.
+114|  The truth: each keeper broke under the same job; the sea took them when their
+115|  records failed. No monsters. The horror is the ledger.
+116|- **Story-emerges-from-sim guarantee:** trace texts reference duty categories and
+117|  consequences, never player-specific state they can't know — so the story cannot
+118|  contradict the sim, because it is made of the sim's own data.
+119|
+120|### 3.6 SHIPS (the score)
+121|- Ships spawn on 2–3 approach lanes per night; count scales with fury and cycle.
+122|- Resolution per ship: sees the beam (reach × clarity × alignment vs fog) → holds a
+123|  safe course; else risk roll against hazards (rocks, unreported reefs, drifting wrecks).
+124|- Outcomes: PASSED / TURNED AWAY (safe, no credit) / WRECKED (distress flare at night;
+125|  the wreck washes ashore next day — and waits for your report).
+126|- You never talk to ships. Flares, bells, and the beam are the only voices.
+127|
+128|## 4. STORM SYSTEM (procedural)
+129|- Parameters: fury 1–5, wind direction/speed, rain density, fog density, duration,
+130|  gust events, lightning strikes.
+131|- **Seeded:** storm seed = run_seed + cycle → deterministic per run (reproducible for
+132|  QA and for the critic rubric).
+133|- Fury curve across 12 cycles (escalation with breather valleys [game_level_content_designer:bb3570f4e15b]):
+134|  `1, 2, 2, 3, 2, 4, 3, 4, 5, 3, 5, 5` — tuned by balance seat; breathers before spikes.
+135|- Gusts above threshold damage the mechanism, crack the lens path, erode paths.
+136|- Lightning = flash light + synthesized thunder. **No VolumetricCloud actors** (Step 1
+137|  budget law: 15ms GPU). Storm sky = volumetric fog + SkyAtmosphere + rain particles.
+138|
+139|## 5. ISLAND LAYOUT (game_level_content_designer seat)
+140|One island, five regions, walkable end-to-end in ~4–6 minutes. No fast travel (the
+141|walk is short and the island IS the game).
+142|
+143|1. **Lighthouse Point** (center-south, high ground): the tower — lamp room (lens,
+144|   mechanism, tank), keeper's room below (log desk, record book, bed).
+145|2. **Cottage Row** (east): cottage, supply shed (finite starting stock), signal post.
+146|3. **Wreck Shore** (west): where the sea returns what it takes; salvage bench.
+147|4. **Old Landing** (north): the pier, the supply boat's last mooring (story), the
+148|   chart house (wreck chart + report desk).
+149|5. **The Back Hills** (south): the five trace sites of the vanished keepers, hidden in
+150|   weather and terrain; a spring; the old path.
+151|
+152|**Paths erode:** storm gusts damage the main path (mud, rockfall). Eroded path = slow
+153|travel until you maintain it (drainage duty). The island's geography carries your
+154|history [game_level_content_designer:bb3570f4e15b].
+155|
+156|**Secret density:** traces reward exploration, never gate the core loop
+157|[game_level_content_designer:88b0470741a8]. You can finish all 12 cycles without
+158|finding a single trace — and get a worse ending for it, honestly earned.
+159|
+160|**Late-game anti-grind:** cycles 9–12 mutate the job with what the island has become
+161|(new reefs you made or marked, eroded or maintained paths, wreck sites open or
+162|cleared) — the late game is your history demanding attention, not the same loop
+163|harder [game_level_content_designer:c811113b62ec — avoid repetitive grind samey].
+164|
+165|## 6. ENDINGS (branch on the record — no dialogue choices)
+166|Cycle 13, dawn: the inspector's boat finally arrives. They walk the island and read
+167|the ledger. The ending is **derived arithmetic on the record**:
+168|
+169|Inputs: ships_saved, ships_lost, dark_interval_minutes, wrecks_reported/unreported,
+170|traces_found (0–5), mechanism_failures, log_completeness (0–100%).
+171|
+172|| Ending | Condition (shape) | Beat |
+173||---|---|---|
+174|| **A. The Light Holds** | high saved, few dark intervals, all wrecks reported, log complete | The inspector re-staffs the light. You train the next keeper. |
+175|| **B. The Ledger and the Sea** | solid record, some gaps | The inspector takes the ledger for the archive; you stay on. Bittersweet. |
+176|| **C. The Quiet Resignation** | poor record, but honest log | Relieved of duty, alive. The light dims behind you. |
+177|| **D. Another Name in the Ledger** | poor record, gaps, unreported wrecks, long dark intervals | The inspector reads your record the way we read the vanished keepers'. The island keeps its next trace. |
+178|| **E. The Truth Assembled** (secret) | all 5 traces + a record that answers them | The full story of the keepers, assembled from their records and yours. |
+179|
+180|Each ending: the inspector's walk (scripted), ledger entries read as on-screen text
+181|(no VO), one final shot of the light — burning or dark. No dialogue choices anywhere.
+182|
+183|## 7. TUTORIAL (cycle 1 = diegetic onboarding)
+184|- Cycle 1 storm is fury 1 (gentle). The previous keeper's final note guides you:
+185|  a short note at each work station teaches exactly one duty, in the world.
+186|- No wall-of-text. No UI tutorial overlay beyond control hints.
+187|- Accessibility day one: rebindable keys, camera distance option, subtitles for all
+188|  diegetic text [gamedesigner:299af5f81d60 — the options themselves are the law; that
+189|  case's failure was the crash loop, which our zero-error gate covers].
+190|
+191|## 8. SAVE / LOAD (performance seat law)
+192|- **Save anywhere** outside the storm-critical window; checkpoints justify themselves
+193|  (dawn autosave is diegetic: the log is written) [gamedesigner:25ec01749aa9].
+194|- **Serialized off-thread, atomic write (tmp + rename), size capped <5MB**
+195|  [game_performance_engineer:32de12d63ae9, cb56bfc3e8bb, 35e6436f27c1, a3a5a32d5781, 46f8a3d79c59].
+196|- Save contains: full world state, keeper record, island memory (wrecks/reefs/erosion),
+197|  storm seed state, cycle counter. Loading restores exactly.
+198|- Autosave at every dawn + manual save at the log desk. Single slot + backup.
+199|
+200|<!-- PART 2 below -->
+201|
+202|## 9. ART DIRECTION (game_visual_direction seat)
+203|**Look: painterly-realist, storm-muted, one warm light.**
+204|- Palette: cold slate blues/greens (sea, rain, rock), warm amber (the lamp, the hearth,
+205|  oil). The lamp is the only saturated warm source in the world — the player's eye
+206|  learns to find it, and to fear its absence.
+207|- **Readability first** [game_visual_direction:6cc7f93959c6]: at gameplay distance,
+208|  interactables read via shape + subtle emissive rim; hazards (rocks, reefs) read via
+209|  white water even in rain. The beam must always be legible as a volume.
+210|- **The one-screenshot rule** [game_visual_direction:95ad438b650f, 6f6cdeb763ba]: the
+211|  key art frame is the lamp room at night, storm behind the glass, beam cutting fog
+212|  over black water. Every vista in the game must sell the game in one frame.
+213|- Screenshake only from authored impacts (lightning strike, hull crack, gust hitting
+214|  the gallery) — never global ambient wobble [game_visual_direction:9711bf681caa].
+215|- Lighting: Lumen GI (verified in Step 1), dim cool key (overcast), lamp as hero light.
+216|  Interior = single warm practicals. No volumetric clouds (budget law).
+217|- Materials: procedural Blender textures baked to simple maps; no AI-generated images
+218|  anywhere. Grain/vignette subtle in post.
+219|
+220|## 10. AUDIO (studio v3 — synthesized, real DSP, no AI slop)
+221|- Storm bed: filtered noise wind (gust-modulated), rain layers by density, thunder
+222|  synthesized (noise burst → convolution), sea loop by fury.
+223|- Diegetic: lamp hiss, mechanism tick (irregular when worn — the audio tell), bell
+224|  buoy, flare crack, hull groans, pen on paper at the log desk.
+225|- Music: none during play. One motif for the inspector's walk and endings.
+226|- All SFX via studio v3 API (api_v3_fx.py) → WAV → UE import. Provenance: synthesized.
+227|
+228|## 11. PERFORMANCE BUDGET (game_performance_engineer seat — the 30fps reality)
+229|Target: **1080p, medium, ≥30fps steady on T1000 4GB** (Step 1 measured 52fps headroom).
+230|
+231|| Line | Budget |
+232||---|---|
+233|| Base scene (island, tower, props) | ~19ms GPU (measured) |
+234|| Volumetric fog (storm) | included above (measured) |
+235|| Rain particles (GPU sprites, capped 2k) | ≤1.5ms |
+236|| Lightning flash (dynamic light, rare) | ≤0.5ms amortized |
+237|| Beam light + volumetric shaft | ≤2.0ms |
+238|| Ships (max 3 concurrent, simple) | ≤1.0ms |
+239|| Character + anims | ≤0.5ms |
+240|| UI (ledger book, HUD) | ≤0.5ms |
+241|| **Total worst-case** | **~26ms → 38fps floor; target 33ms → 30fps guaranteed** |
+242|
+243|Laws: no VolumetricCloud actors (15ms measured). No Lumen HW ray tracing. VSM on.
+244|Texture pool capped. Save serialized off-thread, atomic, <5MB
+245|[game_performance_engineer:32de12d63ae9]. Every build runs the smoke suite
+246|[game_qa_critic:3ba945b1661e]: boot → new game → one duty → save → load → exit clean.
+247|
+248|## 12. BALANCE SHEET (game_balance_economist seat — the duty economy)
+249|Numbers v1 (tune in playtests; every change logged in section 17):
+250|
+251|- **Oil:** tank 100 units. Burn = flame_height(0.5–1.5) × 6 units/hour-of-night.
+252|  Night = 8 game-hours. Full flame full night = 48 units. Ration caps the night's burn.
+253|- **Oil sources:** wreck barrels 15–25 each (1–2 per storm); shed reserve 120 total
+254|  (finite — the clock of the run); no other source. Total economy ≈ 120 + ~10 barrels
+255|  ≈ enough for ~26 night-equivalents at full flame — scarcity is real by cycle 8+.
+256|- **Lens clarity:** decays 8–15%/day (storm-dependent). Cleaning = 1 day-duty, full restore.
+257|  Reach multiplier = 0.4 + 0.6×clarity. Crack penalty −25% until repaired (2 lens parts).
+258|- **Mechanism:** wear +5–12%/night (gust-dependent). Stall risk = wear% above 60.
+259|  Repair = 1 day-duty + 1 clockwork part.
+260|- **Wrecks:** 0–2 wash ashore per storm. Salvage = 1 duty each. Report = 1 duty each.
+261|  Unreported wreck: +8% ship-loss odds per storm per wreck (compounding, max 6 wrecks).
+262|- **Ships:** 2–5 per night by fury. Base loss odds 12% in fury-3 fog with healthy beam;
+263|  scales with (fog × (1−reach) × hazards).
+264|- **Paths:** erosion events per storm; eroded path = 2× travel time until maintained.
+265|- **Traces:** 5 total; each requires reaching its site (weather-gated, not skill-gated).
+266|- **No dominant strategy check** [game_balance_economist:0b5d7f574911]: full-flame
+267|  heroics drains the reserve by cycle ~9 (dark intervals later); pure rationing
+268|  accumulates loss odds via unreported wrecks and lens cracks. The counter to both
+269|  is the wreck economy — salvage is the only renewable, and it requires reporting.
+270|- **Weakest-option tracking** [game_balance_economist:2770c06f838f]: if playtesting
+271|  shows a duty nobody takes (e.g. path maintenance), it gets buffed or cut publicly
+272|  in the changelog — no zombie duties.
+273|- **Readable tells** [game_balance_economist:694d025cc82f]: every failure state has a
+274|  pre-failure signal (mechanism tick irregularity, lens salt shimmer, tank gauge,
+275|  weather glass at the chart house).
+276|
+277|## 13. CRITIC RUBRIC (game_qa_critic seat — the 8.5 gate)
+278|Each round, both scores (self + critic) grade these 10 lines, 0–10 each, weighted:
+279|
+280|| # | Line | Weight |
+281||---|---|---|
+282|| 1 | Zero errors: boots, plays start→finish, exits clean; crash = fail | gate |
+283|| 2 | Job-matters: every duty demonstrably changes outcomes (demo-able) | ×2 |
+284|| 3 | The record: auditable, complete, endings derive from it | ×2 |
+285|| 4 | Island remembers: wrecks/reefs/erosion persist and matter | ×1.5 |
+286|| 5 | Storm: procedural, readable tells, fair, no cheating | ×1 |
+287|| 6 | Performance: ≥30fps steady @1080p medium on T1000 (measured) | ×1 |
+288|| 7 | Feel: third-person control, interact clarity, diegetic UI | ×1 |
+289|| 8 | Audio: synthesized, diegetic, tells present | ×0.5 |
+290|| 9 | Art: one-screenshot rule, readability, warm/cold language | ×1 |
+291|| 10 | Tutorial + accessibility: cycle-1 onboarding, options day one | ×0.5 |
+292|
+293|Binding score = LOWER of (self, critic). PASS = ≥8.5. Below → ranked issue list →
+294|fixes → re-round. Max 3 rounds; then honest 3-strikes report. Bug workflow per
+295|[game_qa_critic:e61a7c5dee5a]: filed → confirmed → assigned → fixed → verified →
+296|closed, with repro steps. Verify on target hardware, not only dev machine
+297|[game_qa_critic:16291a2159ac] — the T1000 IS the target; all perf claims from it.
+298|
+299|## 14. ASSET LIST (derived from this design — with provenance)
+300|All original or properly licensed; provenance logged per file in assets_blender/PROVENANCE.md.
+301|
+302|### Environment (Blender procedural — original)
+303|- Island terrain 240m, ocean plane, cliff rocks ×25, pier (deck+posts), cottage,
+304|  shed, chart house, signal post, wreck hulls ×3, driftwood, fences — all built in
+305|  Blender 5.2.2 via Python API (tools/build_*.py). Provenance: original, this machine.
+306|- Lighthouse: tower (tapered), gallery, lamp room (glazing bars), lamp core, roof,
+307|  interior: spiral stair, 3 landings, log desk, tank, lens assembly (procedural).
+308|
+309|### Character (the keeper — ONE character, no others on screen)
+310|- Body + oilskin outfit + hat: built in Blender (procedural base mesh, hand-tuned).
+311|- Rig: Mixamo auto-rigger (provenance: Adobe Mixamo, account "Test", downloaded via
+312|  CDP session; logged per-file). Animations needed (FINAL LIST — replaces the plan's
+313|  provisional note):
+314|  1. Idle 2. Walk 3. Run 4. Climb ladder/stair 5. Carry (oil can) 6. Clean lens
+315|  7. Repair mechanism 8. Pump/transfer oil 9. Write log 10. Row (ending only)
+316|  If Mixamo blocks: fallback = in-Blender procedural walk/run/idle (documented decision).
+317|
+318|### Props
+319|- Oil can, barrel, lantern, ledger book, pen, chart, buoy, flare, wrench, cloth,
+320|  gears, lens parts, wick, storm glass, bed, stove, chair, shelf, rope coil.
+321|
+322|### FX (in-engine, procedural)
+323|- Rain (GPU sprites), fog volumes, beam (spotlight + volumetric shaft material),
+324|  lightning flash lights, sea foam (material), flare (particle + light), smoke wisp.
+325|
+326|### Audio (studio v3 synthesized — see section 10)
+327|- wind_loop, rain_light/heavy, thunder_near/far, sea_loop, lamp_hiss, mechanism_tick,
+328|  mechanism_stall, bell, flare, hull_groan, pen_scratch, page_turn, footsteps
+329|  (wood/rock/mud), ui_tick, inspector_motif.
+330|
+331|## 15. BUILD PLAN (sequence — designer LEAD)
+332|1. **M1 Playable vertical slice** (cycles 1–3): island + tower + keeper controller +
+333|   oil/lens/mechanism + one storm + ships + record v1 + save/load + smoke suite.
+334|2. **M2 Full loop** (12 cycles): wreck/reef memory, paths, traces ×5, endings A–D,
+335|   tutorial pass, balance v1 numbers live.
+336|3. **M3 Polish**: ending E, audio pass, art pass (one-screenshot vistas), options,
+337|   critic round 1.
+338|4. **Critic rounds** (≤3): play → screenshots (multi-viewpoint) → scores → issues →
+339|   fixes → re-round. Round history in rounds/.
+340|5. **Delivery**: playable build + spec + screenshots + record demo + round history.
+341|
+342|## 16. RISKS
+343|- Mixamo SPA automation may fail → fallback: procedural anims in Blender (decided,
+344|  not a blocker). 15-minute rule applies [Runner rule].
+345|- T1000 VRAM 4GB → texture budget enforced; measured 2480MiB in Step 1.
+346|- Scope: 12 cycles × 5 regions is the MAX. Cut candidates (in order): rowing ending
+347|  beat, ending E secret, path erosion detail. Core job-matters loop is never cut.
+348|- Single-developer reality: every system ships in its simplest honest form first.
+349|
+350|## 17. CHANGELOG
+351|- 2026-10-20 v1.0: Spec locked. Engine verdict Unreal 5.8.3 (Step 1, 52fps steady).
+352|  Clouds banned by budget law. Mixamo anim list finalized (10 anims). Balance v1 numbers set.

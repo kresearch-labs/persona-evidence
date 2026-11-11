@@ -1,0 +1,13 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index c913267476..039259c3e0 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -1776,6 +1776,8 @@ class Query(BaseExpression):
+         return condition, needed_inner
+ 
+     def set_empty(self):
++        if self.combinator:
++            self.combined_queries = ()
+         self.where.add(NothingNode(), AND)
+ 
+     def is_empty(self):

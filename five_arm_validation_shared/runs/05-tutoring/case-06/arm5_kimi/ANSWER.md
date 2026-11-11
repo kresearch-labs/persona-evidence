@@ -1,0 +1,5 @@
+# Case 06 — Answer
+
+**1. The misconception:** The student believes that scaling a figure scales *everything* in it by the same factor — that doubling the sides also doubles the angles. They are overgeneralizing proportional reasoning: lengths scale under similarity, but angles do not. (They may also be confusing a triangle's angle sum with a quadrilateral's 360°.)
+
+**2. The correct concept:** Similar triangles have the *same* angles — that's what "similar" means. Multiplying every side by 2 changes the triangle's size, not its shape: each angle stays exactly as large as before (a scaled 3-4-5 triangle is still a right triangle with the same three angles). And a fundamental fact: the interior angles of *any* triangle — big, small, or scaled — always add up to 180°. So the larger triangle's interior angles sum to **180°**, not 360°. Quick self-check: if doubling the sides doubled the angle sum, the "triangle" would have 360° and couldn't close up into a triangle at all — only lengths scale; angles are preserved.

@@ -1,0 +1,18 @@
+diff --git a/sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py b/sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py
+index ad6a5a8ca3..a2ebee10e0 100644
+--- a/sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py
++++ b/sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py
+@@ -426,6 +426,13 @@ class BaseHistGradientBoosting(BaseEstimator, ABC):
+ 
+         Scores are computed on validation data or on training data.
+         """
++        if is_classifier(self):
++            # y_true is stored as integer-encoded labels, while y_pred as
++            # returned by self.predict() are the original class labels:
++            # map y_true back to the original classes before scoring.
++            y_small_train = self.classes_[y_small_train.astype(np.int64)]
++            y_val = self.classes_[y_val.astype(np.int64)]
++
+         self.train_score_.append(
+             self.scorer_(self, X_binned_small_train, y_small_train)
+         )

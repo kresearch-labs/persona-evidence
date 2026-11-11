@@ -1,0 +1,27 @@
+diff --git a/astropy/io/ascii/html.py b/astropy/io/ascii/html.py
+index 266cf229cc..71085248b2 100644
+--- a/astropy/io/ascii/html.py
++++ b/astropy/io/ascii/html.py
+@@ -424,6 +424,14 @@ class HTML(core.BaseReader):
+                         new_cols = []
+ 
+                         for col, col_escaped in zip(cols, cols_escaped):
++                            # Set the format for the column if it is in the
++                            # formats dict (e.g. from the ``formats`` keyword
++                            # to ascii.write()), since HTML writing does not
++                            # go through the usual data.str_vals() path that
++                            # applies these formats.
++                            if col.info.name in self.data.formats:
++                                col.info.format = self.data.formats[col.info.name]
++
+                             if len(col.shape) > 1 and self.html['multicol']:
+                                 span = col.shape[1]
+                                 for i in range(span):
+@@ -441,7 +449,6 @@ class HTML(core.BaseReader):
+                                 col_str_iters.append(col_iter_str_vals)
+ 
+                                 new_cols_escaped.append(col_escaped)
+-
+                     for row in zip(*col_str_iters):
+                         with w.tag('tr'):
+                             for el, col_escaped in zip(row, new_cols_escaped):

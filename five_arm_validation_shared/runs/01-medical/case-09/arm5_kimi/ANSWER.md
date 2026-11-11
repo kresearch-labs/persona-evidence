@@ -1,0 +1,3 @@
+Most likely diagnosis: Listeria monocytogenes rhombencephalitis (Listeria brainstem encephalitis).
+
+Justification: the biphasic course — a flu-like prodrome followed by peripheral facial (VII) palsy, then fever, meningismus, and progressive brainstem signs with multiple brainstem foci on MRI and a CSF profile of raised pressure, marked pleocytosis, high protein (2.19 g/L) but only mildly reduced glucose with negative Gram/India ink/acid-fast stains — is the classic picture of Listeria rhombencephalitis, which is frequently misdiagnosed initially as peripheral facial neuritis and worsens with empiric dexamethasone.

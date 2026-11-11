@@ -1,0 +1,38 @@
+diff --git a/lib/matplotlib/image.py b/lib/matplotlib/image.py
+index 95bb42d75c..b710e7ac09 100644
+--- a/lib/matplotlib/image.py
++++ b/lib/matplotlib/image.py
+@@ -532,9 +532,9 @@ class _ImageBase(martist.Artist, cm.ScalarMappable):
+                 # we have re-set the vmin/vmax to account for small errors
+                 # that may have moved input values in/out of range
+                 s_vmin, s_vmax = vrange
+-                if isinstance(self.norm, mcolors.LogNorm):
+-                    if s_vmin < 0:
+-                        s_vmin = max(s_vmin, np.finfo(scaled_dtype).eps)
++                if isinstance(self.norm, mcolors.LogNorm) and s_vmin <= 0:
++                    # Don't give 0 or negative values to LogNorm
++                    s_vmin = np.finfo(scaled_dtype).eps
+                 with cbook._setattr_cm(self.norm,
+                                        vmin=s_vmin,
+                                        vmax=s_vmax,
+diff --git a/lib/matplotlib/offsetbox.py b/lib/matplotlib/offsetbox.py
+index f0a25ca6cb..ecbad2c11f 100644
+--- a/lib/matplotlib/offsetbox.py
++++ b/lib/matplotlib/offsetbox.py
+@@ -1599,13 +1599,15 @@ class DraggableBase:
+         if not ref_artist.pickable():
+             ref_artist.set_picker(True)
+         self.got_artist = False
+-        self.canvas = self.ref_artist.figure.canvas
+         self._use_blit = use_blit and self.canvas.supports_blit
+         self.cids = [
+             self.canvas.mpl_connect('pick_event', self.on_pick),
+             self.canvas.mpl_connect('button_release_event', self.on_release),
+         ]
+ 
++    # A property, not an attribute, to maintain picklability.
++    canvas = property(lambda self: self.ref_artist.figure.canvas)
++
+     def on_motion(self, evt):
+         if self._check_still_parented() and self.got_artist:
+             dx = evt.x - self.mouse_x

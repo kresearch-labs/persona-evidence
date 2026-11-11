@@ -1,0 +1,132 @@
+diff --git a/sklearn/neighbors/binary_tree.pxi b/sklearn/neighbors/binary_tree.pxi
+index 97ffac47ce..ddbfa350dd 100755
+--- a/sklearn/neighbors/binary_tree.pxi
++++ b/sklearn/neighbors/binary_tree.pxi
+@@ -1089,8 +1089,8 @@ cdef class BinaryTree:
+         # determine number of levels in the tree, and from this
+         # the number of nodes in the tree.  This results in leaf nodes
+         # with numbers of points between leaf_size and 2 * leaf_size
+-        self.n_levels = np.log2(fmax(1, (n_samples - 1) / self.leaf_size)) + 1
+-        self.n_nodes = (2 ** self.n_levels) - 1
++        self.n_levels = <ITYPE_t> (np.log2(fmax(1, (n_samples - 1) / self.leaf_size)) + 1)
++        self.n_nodes = <ITYPE_t>((2 ** self.n_levels) - 1)
+ 
+         # allocate arrays for storage
+         self.idx_array_arr = np.arange(n_samples, dtype=ITYPE)
+diff --git a/sklearn/neighbors/quad_tree.pyx b/sklearn/neighbors/quad_tree.pyx
+index 5f3454a5aa..9c638b8ca5 100644
+--- a/sklearn/neighbors/quad_tree.pyx
++++ b/sklearn/neighbors/quad_tree.pyx
+@@ -74,7 +74,7 @@ cdef class _QuadTree:
+         # Parameters of the tree
+         self.n_dimensions = n_dimensions
+         self.verbose = verbose
+-        self.n_cells_per_cell = 2 ** self.n_dimensions
++        self.n_cells_per_cell = <SIZE_t>(2 ** self.n_dimensions)
+ 
+         # Inner structures
+         self.max_depth = 0
+@@ -573,7 +573,7 @@ cdef class _QuadTree:
+                                    strides, <void*> self.cells,
+                                    np.NPY_DEFAULT, None)
+         Py_INCREF(self)
+-        arr.base = <PyObject*> self
++        np.PyArray_SetBaseObject(arr, self)
+         return arr
+ 
+     cdef int _resize(self, SIZE_t capacity) nogil except -1:
+diff --git a/sklearn/svm/base.py b/sklearn/svm/base.py
+index 64cebe8375..8b9afd4dbf 100644
+--- a/sklearn/svm/base.py
++++ b/sklearn/svm/base.py
+@@ -287,11 +287,14 @@ class BaseLibSVM(BaseEstimator, metaclass=ABCMeta):
+         n_SV = self.support_vectors_.shape[0]
+ 
+         dual_coef_indices = np.tile(np.arange(n_SV), n_class)
+-        dual_coef_indptr = np.arange(0, dual_coef_indices.size + 1,
+-                                     dual_coef_indices.size / n_class)
+-        self.dual_coef_ = sp.csr_matrix(
+-            (dual_coef_data, dual_coef_indices, dual_coef_indptr),
+-            (n_class, n_SV))
++        if n_SV == 0:
++            self.dual_coef_ = sp.csr_matrix((n_class, n_SV))
++        else:
++            dual_coef_indptr = np.arange(0, dual_coef_indices.size + 1,
++                                         dual_coef_indices.size / n_class)
++            self.dual_coef_ = sp.csr_matrix(
++                (dual_coef_data, dual_coef_indices, dual_coef_indptr),
++                (n_class, n_SV))
+ 
+     def predict(self, X):
+         """Perform regression on samples in X.
+diff --git a/sklearn/svm/tests/test_svm.py b/sklearn/svm/tests/test_svm.py
+index 6ba141811e..34098d5ea0 100644
+--- a/sklearn/svm/tests/test_svm.py
++++ b/sklearn/svm/tests/test_svm.py
+@@ -1043,6 +1043,22 @@ def test_svr_coef_sign():
+                                   np.dot(X, svr.coef_.ravel()) + svr.intercept_)
+ 
+ 
++def test_svr_sparse_no_support_vectors():
++    # Non-regression test for #14894: sparse SVR with no support vectors
++    # used to raise ZeroDivisionError in _sparse_fit.
++    x_train = np.array([[0, 1, 0, 0],
++                        [0, 0, 0, 1],
++                        [0, 0, 1, 0],
++                        [0, 0, 0, 1]])
++    y_train = np.array([0.04, 0.04, 0.10, 0.16])
++    params = dict(C=316.227766017, gamma=1.0, kernel='linear',
++                  max_iter=15000, tol=0.001)
++    svr = svm.SVR(**params).fit(sparse.csr_matrix(x_train), y_train)
++    assert svr.dual_coef_.shape == (1, 0)
++    assert svr.support_vectors_.shape == (0, 4)
++    assert svr.predict(x_train).shape == (4,)
++
++
+ def test_linear_svc_intercept_scaling():
+     # Test that the right error message is thrown when intercept_scaling <= 0
+ 
+diff --git a/sklearn/tree/_tree.pyx b/sklearn/tree/_tree.pyx
+index bbe2c8a796..b7f8c02338 100644
+--- a/sklearn/tree/_tree.pyx
++++ b/sklearn/tree/_tree.pyx
+@@ -159,7 +159,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder):
+         cdef int init_capacity
+ 
+         if tree.max_depth <= 10:
+-            init_capacity = (2 ** (tree.max_depth + 1)) - 1
++            init_capacity = <int>(2 ** (tree.max_depth + 1)) - 1
+         else:
+             init_capacity = 2047
+ 
+@@ -1100,7 +1100,7 @@ cdef class Tree:
+         cdef np.ndarray arr
+         arr = np.PyArray_SimpleNewFromData(3, shape, np.NPY_DOUBLE, self.value)
+         Py_INCREF(self)
+-        arr.base = <PyObject*> self
++        np.PyArray_SetBaseObject(arr, self)
+         return arr
+ 
+     cdef np.ndarray _get_node_ndarray(self):
+@@ -1121,7 +1121,7 @@ cdef class Tree:
+                                    strides, <void*> self.nodes,
+                                    np.NPY_DEFAULT, None)
+         Py_INCREF(self)
+-        arr.base = <PyObject*> self
++        np.PyArray_SetBaseObject(arr, self)
+         return arr
+ 
+     def compute_partial_dependence(self, DTYPE_t[:, ::1] X,
+diff --git a/sklearn/utils/fast_dict.pyx b/sklearn/utils/fast_dict.pyx
+index 719cafc3cc..67b97581d5 100644
+--- a/sklearn/utils/fast_dict.pyx
++++ b/sklearn/utils/fast_dict.pyx
+@@ -128,7 +128,7 @@ cdef class IntFloatDict:
+         return out_obj
+ 
+     def append(self, ITYPE_t key, DTYPE_t value):
+-        cdef cpp_map[ITYPE_t, DTYPE_t].iterator end = self.my_map.end()
++        cdef cpp_map[ITYPE_t, DTYPE_t].const_iterator end = self.my_map.end()
+         # Decrement the iterator
+         dec(end)
+         # Construct our arguments

@@ -1,0 +1,46 @@
+[pruned tool output]
+1|# RUNNER PROVIDES — UE5 VERIFY: read this BEFORE launching your scalability test
+2|
+3|Four verification attempts were already made on this machine today. Hard-won facts:
+4|
+5|1. THE ENGINE IS FINE. UE 5.8.3 loads fully (all modules, Vulkan SM6, audio, RDG).
+6|   T1000 4GB, Vulkan 1.4.312, driver 580.178.04.
+7|
+8|2. CRASH 1 (X11): virtual display (Xvfb) dies mid-startup -> SDL clipboard assert.
+9|   FIX: use the REAL display: export DISPLAY=:0 (a window will appear on the desktop
+10|   - that is expected and fine).
+11|
+12|3. CRASH 2+3 (Vulkan OOM - the killer): first-launch shader compilation + rendering
+13|   together spike VRAM past 4GB -> VulkanMemory.cpp:3114 "Out Of Memory, trying to
+14|   allocate 134217728 bytes" in FVulkanTransientHeap (transient resource allocator).
+15|
+16|4. THE FIX (proven - attempt 5 ran 10+ minutes, zero fatals, clean graceful exit):
+17|   - Set BEFORE engine init, in the project's Config/DefaultEngine.ini:
+18|       [SystemSettings]
+19|       r.TransientResourceAllocator=0
+20|       r.Streaming.PoolSize=1024
+21|     (-ExecCmds is TOO LATE for this cvar - it must be in the ini)
+22|   - Warm shader DDC: TP_FirstPerson_work/ (in the engagement parent dir) already
+23|     has a warm DerivedDataCache from 5 runs - its Saved/ has logs; the DDC cache
+24|     lives in the project dir. Copying that project = warm shaders = ~550MB VRAM
+25|     instead of 3.7GB spike.
+26|   - Launch pattern that worked:
+27|       export DISPLAY=:0
+28|       export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
+29|       timeout 600 UnrealEditor-Cmd <proj> -game -windowed -ResX=1280 -ResY=720 -log -ExecCmds="FPSChart"
+30|     (600s window: startup ~2-4min incl shaders, then gameplay; graceful SIGTERM
+31|     exit is handled cleanly once startup completes)
+32|
+33|5. FPS CHART: -ExecCmds="FPSChart" dumps an FPS summary (avg/min/max/percentiles)
+34|   on exit into the log + Saved/Profiling. Parse THAT for the verdict. stat fps alone
+35|   only draws on-screen.
+36|
+37|6. A ready-made test project EXISTS: ../TP_FirstPerson_work/ (TP_FirstPerson template,
+38|   already patched with the fix ini, warm shaders, ran clean). Reuse or copy it.
+39|
+40|7. There is also an UNTESTED insight: the plan's gate is 1080p MEDIUM with volumetric
+41|   fog. The template scene has no volumetric fog - add it (ExponentialHeightFog with
+42|   volumetric enabled + rain/dark storm lighting) or the fps number proves nothing
+43|   about the actual gate.
+44|
+45|- Runner (runner: provide/verify - you build)

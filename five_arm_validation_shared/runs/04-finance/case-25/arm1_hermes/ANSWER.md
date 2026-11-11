@@ -1,0 +1,15 @@
+# Arm 1 — Reference answer — 04-finance case-25 (Wells Fargo, as of September 2016)
+
+**Recommendation: HOLD for income-oriented existing holders (the dividend remains covered); DO NOT BUY into the storm until the scope of remediation and litigation is quantified — this is a "reputational storm around a best-in-class franchise" that is in the process of proving itself structural. The bias on the date is cautious.**
+
+**Rationale (as known on the date):**
+
+1. **What's knowable: the franchise's core engine is genuinely intact.** Cross-selling built America's most profitable major bank on real retail density — the branches, the deposit franchise, the mortgage book are physical assets competitors cannot replicate quickly. The scandal is about *how* products were sold, not whether the products or the network are wanted. $185M in fines is small against Wells Fargo's earnings power; 5,300 firings is culture-correction, not franchise-destruction.
+
+2. **What's unknowable on the date — and why caution dominates: the tail.** The $185M settlement is explicitly the *first* settlement; further investigations (regulators, state AGs) are signaled, political pressure is building into an election, and class-action/civil litigation over unauthorized accounts typically runs for *years* with aggregate costs that make the initial fine look like a deposit. Every incremental billion of legal expense dents EPS at a bank already squeezed by near-zero rates. Selling now means selling before the tail is measured; buying now means buying before it is.
+
+3. **The structural worry is the cross-selling credibility itself.** The scandal doesn't just cost money — it puts the *sales-culture* under a consent-order microscope. Cross-selling was the strategy *and* the mechanism of the abuse; the remediation (ending sales goals, monitoring) may reduce the very activity that made the bank most profitable. If regulators constrain the model, the "best-in-class profitability" re-rates downward. That is the structural-repricing scenario, and on this date it cannot be ruled out — only priced as a risk.
+
+4. **The dividend math supports holding, not buying.** The dividend remains covered by earnings even post-fine; dividend *growth* requires regulatory approval (a real constraint, and itself a signal of where the bank stands with regulators). For an income client already holding: the yield is intact and the franchise earns through the storm. For a new buyer: the market has not finished discounting remediation, litigation, and compliance costs, and the stock's underperformance versus peers is the discount *forming*.
+
+**Bottom line:** hold existing income positions (the storm is real but the franchise is realer); avoid initiating until (a) the full scope of litigation/remediation is disclosed, and (b) the CEO question resolves — leadership accountability (clawbacks, whether Stumpf survives) is the market's proxy for whether the culture actually changes. The line between storm and structural repricing is exactly the leadership-and-regulatory question, and it is unanswered on this date.

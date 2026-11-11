@@ -1,0 +1,36 @@
+diff --git a/django/db/migrations/autodetector.py b/django/db/migrations/autodetector.py
+index 30616c0172..2f33850f23 100644
+--- a/django/db/migrations/autodetector.py
++++ b/django/db/migrations/autodetector.py
+@@ -525,6 +525,9 @@ class MigrationAutodetector:
+             sorted(added_models, key=self.swappable_first_key, reverse=True),
+             sorted(added_unmanaged_models, key=self.swappable_first_key, reverse=True)
+         )
++        # Fields that exist on a kept model in the old state but not in the
++        # new state, i.e. fields being removed (possibly moved elsewhere).
++        removed_field_keys = self.old_field_keys - self.new_field_keys
+         for app_label, model_name in all_added_models:
+             model_state = self.to_state.models[app_label, model_name]
+             model_opts = self.new_apps.get_model(app_label, model_name)._meta
+@@ -563,6 +566,21 @@ class MigrationAutodetector:
+                 if isinstance(base, str) and "." in base:
+                     base_app_label, base_name = base.split(".", 1)
+                     dependencies.append((base_app_label, base_name, None, True))
++                    # Depend on the removal of any base field this model
++                    # re-declares (a field being moved down to the subclass),
++                    # so the RemoveField is ordered before this CreateModel;
++                    # otherwise rendering the new model clashes with the field
++                    # still present on the base class.
++                    base_key = (base_app_label, base_name.lower())
++                    if base_key in self.from_state.models:
++                        for field_name in self.from_state.models[base_key].fields:
++                            if (
++                                field_name in model_state.fields and
++                                (base_app_label, base_name.lower(), field_name) in removed_field_keys
++                            ):
++                                dependencies.append(
++                                    (base_app_label, base_name.lower(), field_name, False)
++                                )
+             # Depend on the other end of the primary key if it's a relation
+             if primary_key_rel:
+                 dependencies.append((

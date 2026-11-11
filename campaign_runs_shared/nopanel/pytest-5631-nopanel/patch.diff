@@ -1,0 +1,46 @@
+diff --git a/src/_pytest/compat.py b/src/_pytest/compat.py
+index d238061b4..61c897f06 100644
+--- a/src/_pytest/compat.py
++++ b/src/_pytest/compat.py
+@@ -68,7 +68,12 @@ def num_mock_patch_args(function):
+     if any(mock_modules):
+         sentinels = [m.DEFAULT for m in mock_modules if m is not None]
+         return len(
+-            [p for p in patchings if not p.attribute_name and p.new in sentinels]
++            [
++                p
++                for p in patchings
++                if not p.attribute_name
++                and any(p.new is sentinel for sentinel in sentinels)
++            ]
+         )
+     return len(patchings)
+ 
+diff --git a/testing/test_compat.py b/testing/test_compat.py
+index 9e7d05c5d..c77b2018b 100644
+--- a/testing/test_compat.py
++++ b/testing/test_compat.py
+@@ -147,3 +147,23 @@ def test_safe_isclass():
+             assert False, "Should be ignored"
+ 
+     assert safe_isclass(CrappyClass()) is False
++    assert safe_isclass(CrappyClass()) is False
++
++
++def test_num_mock_patch_args_with_numpy(testdir):
++    """#5631: patch(..., new=numpy.array(...)) must not raise ValueError
++    during collection (array __eq__ returns an array, not a bool)."""
++    pytest.importorskip("numpy")
++    testdir.makepyfile(
++        """
++        from unittest.mock import patch
++        import numpy
++
++        @patch("os.path.join", new=numpy.array([1, 2]))
++        def test_nopatch_with_string():
++            pass
++    """
++    )
++    # --assert=plain: assertion rewriting of the temp file is unrelated here
++    result = testdir.runpytest("--assert=plain")
++    result.stdout.fnmatch_lines(["*1 passed*"])

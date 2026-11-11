@@ -1,0 +1,64 @@
+diff --git a/django/db/models/fields/related_lookups.py b/django/db/models/fields/related_lookups.py
+index d745ecd5f9..efc09736ef 100644
+--- a/django/db/models/fields/related_lookups.py
++++ b/django/db/models/fields/related_lookups.py
+@@ -45,6 +45,26 @@ def get_normalized_value(value, lhs):
+ 
+ class RelatedIn(In):
+     def get_prep_lookup(self):
++        if (not isinstance(self.lhs, MultiColSource) and
++                not self.rhs_is_direct_value() and
++                not getattr(self.rhs, 'has_select_fields', True) and
++                not getattr(self.lhs.field.target_field, 'primary_key', False)):
++            # If the rhs is a plain queryset, restrict its select clause to
++            # the column referenced by the join so that the generated
++            # subquery returns only one column even if it's compiled in a
++            # context that doesn't call process_rhs(), e.g. when it's
++            # included in the GROUP BY clause of a query with aggregations
++            # (see ticket #14351).
++            self.rhs.clear_select_clause()
++            if (getattr(self.lhs.output_field, 'primary_key', False) and
++                    self.lhs.output_field.model == self.rhs.model):
++                # A case like Restaurant.objects.filter(place__in=restaurant_qs),
++                # where place is a OneToOneField and the primary key of
++                # Restaurant.
++                target_field = self.lhs.field.name
++            else:
++                target_field = self.lhs.field.target_field.name
++            self.rhs.add_fields([target_field], True)
+         if not isinstance(self.lhs, MultiColSource) and self.rhs_is_direct_value():
+             # If we get here, we are dealing with single-column relations.
+             self.rhs = [get_normalized_value(val, self.lhs)[0] for val in self.rhs]
+diff --git a/django/db/models/lookups.py b/django/db/models/lookups.py
+index 5089737034..ec0d25b102 100644
+--- a/django/db/models/lookups.py
++++ b/django/db/models/lookups.py
+@@ -376,6 +376,18 @@ class IntegerLessThan(IntegerFieldFloatRounding, LessThan):
+ class In(FieldGetDbPrepValueIterableMixin, BuiltinLookup):
+     lookup_name = 'in'
+ 
++    def get_prep_lookup(self):
++        if not self.rhs_is_direct_value() and not getattr(
++                self.rhs, 'has_select_fields', True):
++            # If the rhs is a plain queryset, restrict its select clause to
++            # its primary key so that the generated subquery returns only
++            # one column even if it's compiled in a context that doesn't
++            # call process_rhs(), e.g. when it's included in the GROUP BY
++            # clause of a query with aggregations (see ticket #14351).
++            self.rhs.clear_select_clause()
++            self.rhs.add_fields(['pk'])
++        return super().get_prep_lookup()
++
+     def process_rhs(self, compiler, connection):
+         db_rhs = getattr(self.rhs, '_db', None)
+         if db_rhs is not None and db_rhs != connection.alias:
+@@ -401,9 +413,6 @@ class In(FieldGetDbPrepValueIterableMixin, BuiltinLookup):
+             placeholder = '(' + ', '.join(sqls) + ')'
+             return (placeholder, sqls_params)
+         else:
+-            if not getattr(self.rhs, 'has_select_fields', True):
+-                self.rhs.clear_select_clause()
+-                self.rhs.add_fields(['pk'])
+             return super().process_rhs(compiler, connection)
+ 
+     def get_rhs_op(self, connection, rhs):

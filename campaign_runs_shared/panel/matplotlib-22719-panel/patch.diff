@@ -1,0 +1,12 @@
+diff --git a/lib/matplotlib/units.py b/lib/matplotlib/units.py
+index f0a0072abf..c8aae1369e 100644
+--- a/lib/matplotlib/units.py
++++ b/lib/matplotlib/units.py
+@@ -65,6 +65,7 @@ def _is_natively_supported(x):
+             if thisx is ma.masked:
+                 continue
+             return isinstance(thisx, Number) and not isinstance(thisx, Decimal)
++        return True
+     else:
+         return isinstance(x, Number) and not isinstance(x, Decimal)
+ 

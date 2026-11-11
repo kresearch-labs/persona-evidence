@@ -1,0 +1,24 @@
+diff --git a/django/forms/models.py b/django/forms/models.py
+index 7effb202e3..ea8b439f67 100644
+--- a/django/forms/models.py
++++ b/django/forms/models.py
+@@ -568,6 +568,7 @@ class BaseModelFormSet(BaseFormSet):
+     A ``FormSet`` for editing a queryset and/or adding new objects to it.
+     """
+     model = None
++    edit_only = False
+ 
+     # Set of fields that must be unique among forms of this set.
+     unique_fields = set()
+@@ -820,6 +821,11 @@ class BaseModelFormSet(BaseFormSet):
+             # object.
+             if self.can_delete and self._should_delete_form(form):
+                 continue
++            if self.edit_only:
++                raise ValidationError(
++                    gettext('You may only edit existing %s.') %
++                    self.model._meta.verbose_name_plural
++                )
+             self.new_objects.append(self.save_new(form, commit=commit))
+             if not commit:
+                 self.saved_forms.append(form)

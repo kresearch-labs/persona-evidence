@@ -1,0 +1,28 @@
+diff --git a/django/db/models/fields/files.py b/django/db/models/fields/files.py
+index e10a5bb6d9..0b46821584 100644
+--- a/django/db/models/fields/files.py
++++ b/django/db/models/fields/files.py
+@@ -229,6 +229,9 @@ class FileField(Field):
+ 
+         self.storage = storage or default_storage
+         if callable(self.storage):
++            # Keep a reference to the callable so deconstruct() can return it
++            # without evaluating the storage (storage may vary at runtime).
++            self._storage_callable = self.storage
+             self.storage = self.storage()
+             if not isinstance(self.storage, Storage):
+                 raise TypeError(
+@@ -278,7 +281,12 @@ class FileField(Field):
+         if kwargs.get("max_length") == 100:
+             del kwargs["max_length"]
+         kwargs['upload_to'] = self.upload_to
+-        if self.storage is not default_storage:
++        if getattr(self, '_storage_callable', None) is not None:
++            # Provide a reference to the original callable rather than the
++            # evaluated storage, so the storage can vary at runtime
++            # (mirrors how a callable upload_to is deconstructed).
++            kwargs['storage'] = self._storage_callable
++        elif self.storage is not default_storage:
+             kwargs['storage'] = self.storage
+         return name, path, args, kwargs
+ 

@@ -1,0 +1,14 @@
+diff --git a/xarray/core/rolling.py b/xarray/core/rolling.py
+index aef290f6..6b60ba34 100644
+--- a/xarray/core/rolling.py
++++ b/xarray/core/rolling.py
+@@ -273,6 +273,9 @@ class DataArrayRolling(Rolling["DataArray"]):
+         stops = np.arange(1, len(self.window_labels) + 1)
+         starts = stops - int(self.window[0])
+         starts[: int(self.window[0])] = 0
++        if self.center[0]:
++            starts = np.concatenate([starts[1:], [len(self.window_labels)]])
++            stops = np.concatenate([stops[1:], [len(self.window_labels) + 1]])
+         for (label, start, stop) in zip(self.window_labels, starts, stops):
+             window = self.obj.isel({self.dim[0]: slice(start, stop)})
+ 

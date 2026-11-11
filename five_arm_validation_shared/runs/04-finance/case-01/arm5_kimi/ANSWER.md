@@ -1,0 +1,3 @@
+Sell.
+
+Justification: As of November 8, 2001, Enron had just announced a restatement of nearly five years of earnings, a $1 billion write-off, and a $1.2 billion reduction in shareholder equity — meaning the reported profits underpinning any valuation could no longer be trusted. Combined with opaque off-balance-sheet partnerships that independent reviewers flagged as questionable, the CEO's sudden resignation three months earlier, a stock already down ~78% from its high, and mounting credit and congressional scrutiny, the risk of total loss far outweighed the unknowable residual value of the trading franchise. When the numbers themselves are unreliable, no defensible buy or hold case exists — sell.

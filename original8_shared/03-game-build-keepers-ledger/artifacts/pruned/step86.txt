@@ -1,0 +1,46 @@
+[pruned tool output]
+380|# ------------------------------------------------------------ interaction --
+381|def nearest_interactable():
+382|    pawn = None
+383|    try:
+384|        pawn = unreal.GameplayStatics.get_player_pawn(S["world"], 0)
+385|    except Exception:
+386|        return None, None
+387|    if not pawn:
+388|        return None, None
+389|    ploc = pawn.get_actor_location()
+390|    best, bdist = None, 1e9
+391|    cands = {}
+392|    for lbl in ("Station_Lamp", "Station_Lens", "Station_Oil", "Station_Log",
+393|                "Note_Lens", "Note_Oil", "Note_Report"):
+394|        a = S["actors"].get(lbl)
+395|        if a:
+396|            cands[lbl] = a
+397|    for i in S["wrecks"]:
+398|        a = S["actors"].get("Wreck_%d" % i)
+399|        if a:
+400|            cands["Wreck_%d" % i] = a
+401|    for lbl, a in cands.items():
+402|        try:
+403|            d = a.get_distance_to(pawn)
+404|            if d < bdist:
+405|                best, bdist = lbl, d
+406|        except Exception:
+407|            continue
+408|    if best and bdist < 220.0:
+409|        return best, bdist
+410|    return None, None
+411|
+412|def interact(lbl):
+413|    if lbl.startswith("Station_Lamp"):
+414|        if S["day_flags"]["lamp"]:
+415|            toast(S["pc"], "The lamp is already trimmed for tonight.")
+416|        else:
+417|            S["day_flags"]["lamp"] = True
+418|            rec("LAMP_TRIMMED", "Lamp trimmed and ready for dusk.")
+419|            toast(S["pc"], "Lamp trimmed. It will burn tonight if the oil holds.")
+420|    elif lbl == "Station_Lens":
+421|        S["lens"] = 100.0
+422|        S["day_flags"]["lens"] = True
+423|        rec("LENS_CLEANED", "Lens cleaned to 100%.")
+424|        toast(S["pc"], "The glass gleams. Beam reach restored.")

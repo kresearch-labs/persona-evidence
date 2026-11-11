@@ -1,0 +1,74 @@
+diff --git a/astropy/io/fits/card.py b/astropy/io/fits/card.py
+index 8c1ac5d738..b335916a53 100644
+--- a/astropy/io/fits/card.py
++++ b/astropy/io/fits/card.py
+@@ -5,7 +5,7 @@ import warnings
+ 
+ import numpy as np
+ 
+-from .util import _str_to_num, _is_int, translate, _words_group
++from .util import _str_to_num, _is_int, translate, _words_group, decode_ascii
+ from .verify import _Verify, _ErrList, VerifyError, VerifyWarning
+ 
+ from . import conf
+@@ -553,6 +553,9 @@ class Card(_Verify):
+         card(s).
+         """
+ 
++        if isinstance(image, bytes):
++            image = decode_ascii(image)
++
+         card = cls()
+         card._image = _pad(image)
+         card._verified = False
+diff --git a/astropy/io/fits/header.py b/astropy/io/fits/header.py
+index ad07e6d52d..7a2e5e69b2 100644
+--- a/astropy/io/fits/header.py
++++ b/astropy/io/fits/header.py
+@@ -334,8 +334,9 @@ class Header:
+ 
+         Parameters
+         ----------
+-        data : str
+-           String containing the entire header.
++        data : str or bytes
++           A str or byte string containing the entire header.  Bytes are
++           decoded as ASCII.
+ 
+         sep : str, optional
+             The string separating cards from each other, such as a newline.  By
+@@ -348,6 +349,12 @@ class Header:
+             A new `Header` instance.
+         """
+ 
++        if isinstance(data, bytes):
++            data = decode_ascii(data)
++
++        if isinstance(sep, bytes):
++            sep = decode_ascii(sep)
++
+         cards = []
+ 
+         # If the card separator contains characters that may validly appear in
+diff --git a/astropy/units/quantity.py b/astropy/units/quantity.py
+index b6dab63cdd..62ba4e6104 100644
+--- a/astropy/units/quantity.py
++++ b/astropy/units/quantity.py
+@@ -585,7 +585,7 @@ class Quantity(np.ndarray, metaclass=InheritDocstrings):
+         if obj is None:
+             obj = self.view(np.ndarray)
+         else:
+-            obj = np.array(obj, copy=False)
++            obj = np.asarray(obj)
+ 
+         # Take the view, set the unit, and update possible other properties
+         # such as ``info``, ``wrap_angle`` in `Longitude`, etc.
+@@ -1364,7 +1364,7 @@ class Quantity(np.ndarray, metaclass=InheritDocstrings):
+         if check_precision:
+             # If, e.g., we are casting double to float, we want to fail if
+             # precision is lost, but let things pass if it works.
+-            _value = np.array(_value, copy=False)
++            _value = np.asarray(_value)
+             if not np.can_cast(_value.dtype, self.dtype):
+                 self_dtype_array = np.array(_value, self.dtype)
+                 if not np.all(np.logical_or(self_dtype_array == _value,

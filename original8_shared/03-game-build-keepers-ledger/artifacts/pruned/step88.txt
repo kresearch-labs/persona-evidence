@@ -1,0 +1,56 @@
+[pruned tool output]
+300|        return
+301|    start_day()
+302|
+303|# ----------------------------------------------------------------- ships ---
+304|def ship_tick(dt):
+305|    if S["phase"] != "NIGHT":
+306|        return
+307|    # lamp death mid-night
+308|    if S["lamp_lit"] and S["lamp_dead_at"] is not None and S["phase_t"] >= S["lamp_dead_at"]:
+309|        S["lamp_lit"] = False
+310|        rec("LIGHT_DIED", "The light died mid-night (oil exhausted).")
+311|        toast(S["pc"], "The light dies...", 4.0)
+312|    # beam
+313|    beam_actor = S["actors"].get("BeamLight")
+314|    if S["lamp_lit"]:
+315|        S["beam_yaw"] = (S["beam_yaw"] + 90.0 * dt) % 360.0
+316|        if beam_actor:
+317|            beam_actor.set_actor_rotation(unreal.Rotator(0, S["beam_yaw"], 0), False)
+318|        set_light(beam_actor, 8.0)
+319|        set_light(S["actors"].get("TowerGlow"), 6.0)
+320|    else:
+321|        if beam_actor:
+322|            set_light(beam_actor, 0.0)
+323|        set_light(S["actors"].get("TowerGlow"), 0.5)
+324|    # ships
+325|    rng = beam_range_uu()
+326|    for sh in S["ships"]:
+327|        if not sh["alive"]:
+328|            continue
+329|        sh["x"] += CFG["ship_speed"] * dt
+330|        try:
+331|            sh["actor"].set_actor_location(unreal.Vector(sh["x"], sh["y"], 40), False, True)
+332|        except Exception:
+333|            pass
+334|        # decision point: closest approach to lighthouse x
+335|        if not sh["decided"] and sh["x"] >= LH_X - 60.0:
+336|            sh["decided"] = True
+337|            dx, dy = sh["x"] - LH_X, sh["y"] - LH_Y
+338|            dist = math.sqrt(dx * dx + dy * dy)
+339|            ang = math.degrees(math.atan2(dy, dx)) % 360.0
+340|            diff = abs((ang - S["beam_yaw"] + 180.0) % 360.0 - 180.0)
+341|            beam_ok = S["lamp_lit"] and diff <= CFG["beam_half_angle_deg"] and dist <= rng
+342|            # reef in lane at this x?
+343|            reef_hit = False
+344|            for i in S["reefs"]:
+345|                if abs(WRECK_SLOT_X[i] - sh["x"]) < 150.0:
+346|                    reef_hit = True
+347|                    break
+348|            if beam_ok:
+349|                S["saved_total"] += 1
+350|                rec("SHIP_SAVED", "Ship saw the beam at %.0fm and stood off. (reef:%s)" % (dist / 100.0, reef_hit))
+351|                toast(S["pc"], "A ship answers with two horns — it sees the light.", 4.0)
+352|            elif reef_hit:
+353|                sink(sh, "struck the reef in the dark")
+354|            else:

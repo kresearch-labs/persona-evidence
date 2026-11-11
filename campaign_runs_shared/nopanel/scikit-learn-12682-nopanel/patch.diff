@@ -1,0 +1,375 @@
+diff --git a/doc/whats_new/v0.22.rst b/doc/whats_new/v0.22.rst
+index 1089284a9f..2e973401c8 100644
+--- a/doc/whats_new/v0.22.rst
++++ b/doc/whats_new/v0.22.rst
+@@ -40,7 +40,22 @@ Changelog
+     where 123456 is the *pull request* number, not the issue number.
+ 
+ :mod:`sklearn.decomposition`
+-..................
++............................
++
++- |Fix| :func:`decomposition.sparse_encode()` now passes the `max_iter` to the
++  underlying `LassoLars` when `algorithm='lasso_lars'`. :issue:`12650` by
++  `Adrin Jalali`_.
++
++- |Enhancement| :func:`decomposition.dict_learning()` and
++  :func:`decomposition.dict_learning_online()` now accept `method_max_iter` and
++  pass it to `sparse_encode`. :issue:`12650` by `Adrin Jalali`_.
++
++- |Enhancement| :class:`decomposition.SparseCoder`,
++  :class:`decomposition.DictionaryLearning`, and
++  :class:`decomposition.MiniBatchDictionaryLearning` now take a
++  `transform_max_iter` parameter and pass it to either
++  :func:`decomposition.dict_learning()` or
++  :func:`decomposition.sparse_encode()`. :issue:`12650` by `Adrin Jalali`_.
+ 
+ - |Enhancement| :class:`decomposition.IncrementalPCA` now accepts sparse
+   matrices as input, converting them to dense in batches thereby avoiding the
+diff --git a/examples/decomposition/plot_sparse_coding.py b/examples/decomposition/plot_sparse_coding.py
+index 528817ad0c..8a87727a7c 100644
+--- a/examples/decomposition/plot_sparse_coding.py
++++ b/examples/decomposition/plot_sparse_coding.py
+@@ -27,9 +27,9 @@ from sklearn.decomposition import SparseCoder
+ def ricker_function(resolution, center, width):
+     """Discrete sub-sampled Ricker (Mexican hat) wavelet"""
+     x = np.linspace(0, resolution - 1, resolution)
+-    x = ((2 / ((np.sqrt(3 * width) * np.pi ** 1 / 4)))
+-         * (1 - ((x - center) ** 2 / width ** 2))
+-         * np.exp((-(x - center) ** 2) / (2 * width ** 2)))
++    x = ((2 / (np.sqrt(3 * width) * np.pi ** .25))
++         * (1 - (x - center) ** 2 / width ** 2)
++         * np.exp(-(x - center) ** 2 / (2 * width ** 2)))
+     return x
+ 
+ 
+diff --git a/sklearn/__init__.py b/sklearn/__init__.py
+index 4f8c5d6d78..5197f817e4 100644
+--- a/sklearn/__init__.py
++++ b/sklearn/__init__.py
+@@ -20,6 +20,14 @@ import os
+ 
+ from ._config import get_config, set_config, config_context
+ 
++# NumPy>=1.24 removed the deprecated scalar aliases; restore them so this
++# 2019-era codebase imports cleanly against numpy 1.26 (local verification only).
++import numpy as _np
++_np.float = float
++_np.int = int
++_np.bool = bool
++_np.object = object
++
+ logger = logging.getLogger(__name__)
+ logger.addHandler(logging.StreamHandler())
+ logger.setLevel(logging.INFO)
+diff --git a/sklearn/_build_utils/__init__.py b/sklearn/_build_utils/__init__.py
+index 2d872dd378..d597d07348 100644
+--- a/sklearn/_build_utils/__init__.py
++++ b/sklearn/_build_utils/__init__.py
+@@ -89,4 +89,6 @@ def maybe_cythonize_extensions(top_path, config):
+         config.ext_modules = cythonize(
+             config.ext_modules,
+             compile_time_env={'SKLEARN_OPENMP_SUPPORTED': with_openmp},
+-            compiler_directives={'language_level': 3})
++            # Cython 3 migration: 0.29 treated nogil cdef functions as noexcept
++            compiler_directives={'language_level': 3,
++                                 'legacy_implicit_noexcept': True})
+diff --git a/sklearn/decomposition/dict_learning.py b/sklearn/decomposition/dict_learning.py
+index a318c957fe..1f93e2ab19 100644
+--- a/sklearn/decomposition/dict_learning.py
++++ b/sklearn/decomposition/dict_learning.py
+@@ -865,11 +865,13 @@ class SparseCodingMixin(TransformerMixin):
+                                   transform_algorithm='omp',
+                                   transform_n_nonzero_coefs=None,
+                                   transform_alpha=None, split_sign=False,
+-                                  n_jobs=None, positive_code=False):
++                                  n_jobs=None, positive_code=False,
++                                  transform_max_iter=1000):
+         self.n_components = n_components
+         self.transform_algorithm = transform_algorithm
+         self.transform_n_nonzero_coefs = transform_n_nonzero_coefs
+         self.transform_alpha = transform_alpha
++        self.transform_max_iter = transform_max_iter
+         self.split_sign = split_sign
+         self.n_jobs = n_jobs
+         self.positive_code = positive_code
+@@ -899,8 +901,8 @@ class SparseCodingMixin(TransformerMixin):
+         code = sparse_encode(
+             X, self.components_, algorithm=self.transform_algorithm,
+             n_nonzero_coefs=self.transform_n_nonzero_coefs,
+-            alpha=self.transform_alpha, n_jobs=self.n_jobs,
+-            positive=self.positive_code)
++            alpha=self.transform_alpha, max_iter=self.transform_max_iter,
++            n_jobs=self.n_jobs, positive=self.positive_code)
+ 
+         if self.split_sign:
+             # feature vector is split into a positive and negative side
+@@ -974,6 +976,12 @@ class SparseCoder(BaseEstimator, SparseCodingMixin):
+ 
+         .. versionadded:: 0.20
+ 
++    transform_max_iter : int, optional (default=1000)
++        Maximum number of iterations to perform if `algorithm='lasso_cd'` or
++        `lasso_lars`.
++
++        .. versionadded:: 0.22
++
+     Attributes
+     ----------
+     components_ : array, [n_components, n_features]
+@@ -991,12 +999,13 @@ class SparseCoder(BaseEstimator, SparseCodingMixin):
+ 
+     def __init__(self, dictionary, transform_algorithm='omp',
+                  transform_n_nonzero_coefs=None, transform_alpha=None,
+-                 split_sign=False, n_jobs=None, positive_code=False):
++                 split_sign=False, n_jobs=None, positive_code=False,
++                 transform_max_iter=1000):
+         self._set_sparse_coding_params(dictionary.shape[0],
+                                        transform_algorithm,
+                                        transform_n_nonzero_coefs,
+                                        transform_alpha, split_sign, n_jobs,
+-                                       positive_code)
++                                       positive_code, transform_max_iter)
+         self.components_ = dictionary
+ 
+     def fit(self, X, y=None):
+@@ -1122,6 +1131,12 @@ class DictionaryLearning(BaseEstimator, SparseCodingMixin):
+ 
+         .. versionadded:: 0.20
+ 
++    transform_max_iter : int, optional (default=1000)
++        Maximum number of iterations to perform if `algorithm='lasso_cd'` or
++        `lasso_lars`.
++
++        .. versionadded:: 0.22
++
+     Attributes
+     ----------
+     components_ : array, [n_components, n_features]
+@@ -1152,12 +1167,13 @@ class DictionaryLearning(BaseEstimator, SparseCodingMixin):
+                  transform_n_nonzero_coefs=None, transform_alpha=None,
+                  n_jobs=None, code_init=None, dict_init=None, verbose=False,
+                  split_sign=False, random_state=None,
+-                 positive_code=False, positive_dict=False):
++                 positive_code=False, positive_dict=False,
++                 transform_max_iter=1000):
+ 
+         self._set_sparse_coding_params(n_components, transform_algorithm,
+                                        transform_n_nonzero_coefs,
+                                        transform_alpha, split_sign, n_jobs,
+-                                       positive_code)
++                                       positive_code, transform_max_iter)
+         self.alpha = alpha
+         self.max_iter = max_iter
+         self.tol = tol
+@@ -1305,6 +1321,12 @@ class MiniBatchDictionaryLearning(BaseEstimator, SparseCodingMixin):
+ 
+         .. versionadded:: 0.20
+ 
++    transform_max_iter : int, optional (default=1000)
++        Maximum number of iterations to perform if `algorithm='lasso_cd'` or
++        `lasso_lars`.
++
++        .. versionadded:: 0.22
++
+     Attributes
+     ----------
+     components_ : array, [n_components, n_features]
+@@ -1341,12 +1363,13 @@ class MiniBatchDictionaryLearning(BaseEstimator, SparseCodingMixin):
+                  shuffle=True, dict_init=None, transform_algorithm='omp',
+                  transform_n_nonzero_coefs=None, transform_alpha=None,
+                  verbose=False, split_sign=False, random_state=None,
+-                 positive_code=False, positive_dict=False):
++                 positive_code=False, positive_dict=False,
++                 transform_max_iter=1000):
+ 
+         self._set_sparse_coding_params(n_components, transform_algorithm,
+                                        transform_n_nonzero_coefs,
+                                        transform_alpha, split_sign, n_jobs,
+-                                       positive_code)
++                                       positive_code, transform_max_iter)
+         self.alpha = alpha
+         self.n_iter = n_iter
+         self.fit_algorithm = fit_algorithm
+diff --git a/sklearn/decomposition/tests/test_dict_learning.py b/sklearn/decomposition/tests/test_dict_learning.py
+index f0bd4bedfe..ba3593465c 100644
+--- a/sklearn/decomposition/tests/test_dict_learning.py
++++ b/sklearn/decomposition/tests/test_dict_learning.py
+@@ -1,4 +1,5 @@
+ import pytest
++import warnings
+ 
+ import numpy as np
+ import itertools
+@@ -57,6 +58,56 @@ def test_dict_learning_overcomplete():
+     assert dico.components_.shape == (n_components, n_features)
+ 
+ 
++def test_max_iter():
++    def ricker_function(resolution, center, width):
++        """Discrete sub-sampled Ricker (Mexican hat) wavelet"""
++        x = np.linspace(0, resolution - 1, resolution)
++        x = ((2 / (np.sqrt(3 * width) * np.pi ** .25))
++             * (1 - (x - center) ** 2 / width ** 2)
++             * np.exp(-(x - center) ** 2 / (2 * width ** 2)))
++        return x
++
++    def ricker_matrix(width, resolution, n_components):
++        """Dictionary of Ricker (Mexican hat) wavelets"""
++        centers = np.linspace(0, resolution - 1, n_components)
++        D = np.empty((n_components, resolution))
++        for i, center in enumerate(centers):
++            D[i] = ricker_function(resolution, center, width)
++        D /= np.sqrt(np.sum(D ** 2, axis=1))[:, np.newaxis]
++        return D
++
++    transform_algorithm = 'lasso_cd'
++    resolution = 1024
++    subsampling = 3  # subsampling factor
++    n_components = resolution // subsampling
++
++    # Compute a wavelet dictionary
++    D_multi = np.r_[tuple(ricker_matrix(width=w, resolution=resolution,
++                          n_components=n_components // 5)
++                          for w in (10, 50, 100, 500, 1000))]
++
++    X = np.linspace(0, resolution - 1, resolution)
++    first_quarter = X < resolution / 4
++    X[first_quarter] = 3.
++    X[np.logical_not(first_quarter)] = -1.
++    X = X.reshape(1, -1)
++
++    # check that the underlying model fails to converge
++    with pytest.warns(ConvergenceWarning):
++        model = SparseCoder(D_multi, transform_algorithm=transform_algorithm,
++                            transform_max_iter=1)
++        model.fit_transform(X)
++
++    # check that the underlying model converges w/o warnings
++    with warnings.catch_warnings(record=True) as record:
++        warnings.simplefilter('always')
++        model = SparseCoder(D_multi, transform_algorithm=transform_algorithm,
++                            transform_max_iter=2000)
++        model.fit_transform(X)
++    assert not [w for w in record
++                if issubclass(w.category, ConvergenceWarning)]
++
++
+ def test_dict_learning_lars_positive_parameter():
+     n_components = 5
+     alpha = 1
+diff --git a/sklearn/neighbors/binary_tree.pxi b/sklearn/neighbors/binary_tree.pxi
+index 50450fed01..a97bde18da 100755
+--- a/sklearn/neighbors/binary_tree.pxi
++++ b/sklearn/neighbors/binary_tree.pxi
+@@ -1089,8 +1089,8 @@ cdef class BinaryTree:
+         # determine number of levels in the tree, and from this
+         # the number of nodes in the tree.  This results in leaf nodes
+         # with numbers of points between leaf_size and 2 * leaf_size
+-        self.n_levels = np.log2(fmax(1, (n_samples - 1) / self.leaf_size)) + 1
+-        self.n_nodes = (2 ** self.n_levels) - 1
++        self.n_levels = int(np.log2(fmax(1, (n_samples - 1) / self.leaf_size))) + 1
++        self.n_nodes = int(2 ** self.n_levels) - 1
+ 
+         # allocate arrays for storage
+         self.idx_array_arr = np.arange(n_samples, dtype=ITYPE)
+diff --git a/sklearn/neighbors/quad_tree.pyx b/sklearn/neighbors/quad_tree.pyx
+index c2a8df44a1..c3593c017a 100644
+--- a/sklearn/neighbors/quad_tree.pyx
++++ b/sklearn/neighbors/quad_tree.pyx
+@@ -27,6 +27,7 @@ cdef extern from "numpy/arrayobject.h":
+                                 int nd, np.npy_intp* dims,
+                                 np.npy_intp* strides,
+                                 void* data, int flags, object obj)
++    int PyArray_SetBaseObject(object arr, PyObject* obj)
+ 
+ 
+ # XXX using (size_t)(-1) is ugly, but SIZE_MAX is not available in C89
+@@ -78,7 +79,7 @@ cdef class _QuadTree:
+         # Parameters of the tree
+         self.n_dimensions = n_dimensions
+         self.verbose = verbose
+-        self.n_cells_per_cell = 2 ** self.n_dimensions
++        self.n_cells_per_cell = int(2 ** self.n_dimensions)
+ 
+         # Inner structures
+         self.max_depth = 0
+@@ -576,7 +577,7 @@ cdef class _QuadTree:
+                                    strides, <void*> self.cells,
+                                    np.NPY_DEFAULT, None)
+         Py_INCREF(self)
+-        arr.base = <PyObject*> self
++        PyArray_SetBaseObject(arr, <PyObject*> self)
+         return arr
+ 
+     cdef int _resize(self, SIZE_t capacity) nogil except -1:
+diff --git a/sklearn/tree/_tree.pyx b/sklearn/tree/_tree.pyx
+index f27b42ae9c..1d58d140d8 100644
+--- a/sklearn/tree/_tree.pyx
++++ b/sklearn/tree/_tree.pyx
+@@ -43,6 +43,7 @@ cdef extern from "numpy/arrayobject.h":
+                                 int nd, np.npy_intp* dims,
+                                 np.npy_intp* strides,
+                                 void* data, int flags, object obj)
++    int PyArray_SetBaseObject(object arr, PyObject* obj)
+ 
+ # =============================================================================
+ # Types and constants
+@@ -158,7 +159,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder):
+         cdef int init_capacity
+ 
+         if tree.max_depth <= 10:
+-            init_capacity = (2 ** (tree.max_depth + 1)) - 1
++            init_capacity = int(2 ** (tree.max_depth + 1)) - 1
+         else:
+             init_capacity = 2047
+ 
+@@ -1101,7 +1102,7 @@ cdef class Tree:
+         cdef np.ndarray arr
+         arr = np.PyArray_SimpleNewFromData(3, shape, np.NPY_DOUBLE, self.value)
+         Py_INCREF(self)
+-        arr.base = <PyObject*> self
++        PyArray_SetBaseObject(arr, <PyObject*> self)
+         return arr
+ 
+     cdef np.ndarray _get_node_ndarray(self):
+@@ -1121,7 +1122,7 @@ cdef class Tree:
+                                    strides, <void*> self.nodes,
+                                    np.NPY_DEFAULT, None)
+         Py_INCREF(self)
+-        arr.base = <PyObject*> self
++        PyArray_SetBaseObject(arr, <PyObject*> self)
+         return arr
+ 
+ 
+diff --git a/sklearn/utils/fast_dict.pyx b/sklearn/utils/fast_dict.pyx
+index 719cafc3cc..66f98faa5c 100644
+--- a/sklearn/utils/fast_dict.pyx
++++ b/sklearn/utils/fast_dict.pyx
+@@ -66,7 +66,7 @@ cdef class IntFloatDict:
+     # and relying on the to_arrays method
+     #def __iter__(self):
+     #    cdef cpp_map[ITYPE_t, DTYPE_t].iterator it = self.my_map.begin()
+-    #    cdef cpp_map[ITYPE_t, DTYPE_t].iterator end = self.my_map.end()
++    #    cdef cpp_map[ITYPE_t, DTYPE_t].const_iterator end = self.my_map.end()
+     #    while it != end:
+     #        yield deref(it).first, deref(it).second
+     #        inc(it)
+@@ -106,7 +106,7 @@ cdef class IntFloatDict:
+     cdef _to_arrays(self, ITYPE_t [:] keys, DTYPE_t [:] values):
+         # Internal version of to_arrays that takes already-initialized arrays
+         cdef cpp_map[ITYPE_t, DTYPE_t].iterator it = self.my_map.begin()
+-        cdef cpp_map[ITYPE_t, DTYPE_t].iterator end = self.my_map.end()
++        cdef cpp_map[ITYPE_t, DTYPE_t].const_iterator end = self.my_map.end()
+         cdef int index = 0
+         while it != end:
+             keys[index] = deref(it).first
+@@ -128,7 +128,7 @@ cdef class IntFloatDict:
+         return out_obj
+ 
+     def append(self, ITYPE_t key, DTYPE_t value):
+-        cdef cpp_map[ITYPE_t, DTYPE_t].iterator end = self.my_map.end()
++        cdef cpp_map[ITYPE_t, DTYPE_t].const_iterator end = self.my_map.end()
+         # Decrement the iterator
+         dec(end)
+         # Construct our arguments

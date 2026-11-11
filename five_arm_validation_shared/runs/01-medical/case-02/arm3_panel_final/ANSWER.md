@@ -1,0 +1,1 @@
+Thoracic (type A) aortic dissection presenting as acute coronary syndrome — the ST-depression "ACS" picture and cardiogenic shock are from dissection involving the aortic root/coronary ostia, and the absence of pulse or arm-BP differences and of mediastinal widening does not exclude it.

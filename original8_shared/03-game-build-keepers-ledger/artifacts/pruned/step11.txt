@@ -1,0 +1,4 @@
+[pruned tool output]
+1|
+2|## STEP 1 — ENGINE VERDICT
+3|UE5.8.3 scalability verify COMPLETE on T1000 4GB. Method: real game-process run, 1080p native, all sg groups=Medium(1)+ResQ100, VSync off, CSV per-frame profiler, 3600 frames. Scene: procedural Blender island+lighthouse+cottage+pier+wrecks (57 SM actors) + storm lighting + VOLUMETRIC FOG + SkyAtmosphere (+/- VolumetricCloud A/B). RESULTS: clouds ON 29.3fps avg (GPU 33.9ms); clouds OFF 52.4fps avg / 53.2 steady, p95 50.5, GPU 19.0ms; repeat run 52.1fps (reproducible). VRAM 2480/4096MiB. VERDICT: UNREAL 5.8.3 PASS with documented constraint: no VolumetricCloud actors (15ms GPU cost) — storm sky = volumetric fog + SkyAtmosphere + rain particles + lightning lights. Full data: design/step1_engine_verdict.md. Note: brief said a scalability test was 'in flight' — none was running; this session built the scene and ran the benchmark from scratch (4 runs, all clean exits).
