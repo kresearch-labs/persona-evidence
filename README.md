@@ -1,10 +1,10 @@
 # Persona — evidence
 
-Everything behind the numbers in the paper *Persona: A Growable Personality Layer That Turns Any Agent Into a Companion That Learns You*: raw run records, official grade reports, test sets, scorers, and the paper source.
+Everything behind the numbers in the paper *Persona: A Growable Personality Layer That Turns Any Agent Into a Companion That Learns You* ([https://doi.org/10.5281/zenodo.24145734](https://doi.org/10.5281/zenodo.24145734)): raw run records, official grade reports, test sets, scorers, and the paper source.
 
 - Engine: [kresearch-labs/Persona](https://github.com/kresearch-labs/Persona)
 - Agent with Persona inside: [kresearch-labs/aura-agent](https://github.com/kresearch-labs/aura-agent)
-- Trained pblocks (packed): linked from the Persona repository
+- Trained pblocks (packed): [Kresearch/persona-pblocks](https://huggingface.co/datasets/Kresearch/persona-pblocks)
 
 Every run here was made on one consumer PC with a low-cost flash model through a public API, under the limits stated in the paper. Infrastructure retries and missing receipts are part of the record and are left as they happened.
 
@@ -41,6 +41,21 @@ It prints 89.4% of harmful requests stopped and 55.2% of benign requests wrongly
 ## Reproduce and extend
 
 We ask for independent reproduction on proper evaluation infrastructure: rerun the paired SWE-bench A/B, rerun the five-field test with a significance test, keep training Keel Guard on new misuse cases and benign look-alikes, and grow pblocks in new domains. Results from others, whatever they show, will be linked from the Persona repository.
+
+## Cite
+
+The paper: *Persona: A Growable Personality Layer That Turns Any Agent Into a Companion That Learns You* — [https://doi.org/10.5281/zenodo.24145734](https://doi.org/10.5281/zenodo.24145734)
+
+```bibtex
+@misc{king2026persona,
+  title     = {Persona: A Growable Personality Layer That Turns Any Agent Into a Companion That Learns You},
+  author    = {King},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24145734},
+  url       = {https://doi.org/10.5281/zenodo.24145734}
+}
+```
 
 ## License
 
